@@ -8,14 +8,17 @@ import kotlinx.coroutines.flow.StateFlow
 
 object FakeAttemptRepository {
 
+    // -------------------------
+    // In-memory attempt store
+    // -------------------------
     private val attempts = mutableMapOf<String, AttemptResult>()
+
     private val _attemptsFlow =
         MutableStateFlow<List<AttemptResult>>(emptyList())
-
     val attemptsFlow: StateFlow<List<AttemptResult>> = _attemptsFlow
 
     // -------------------------
-    // Save attempt (called ONCE from TestEngine)
+    // Save attempt (called from TestEngine)
     // -------------------------
     fun saveResult(
         testId: String,
@@ -41,7 +44,7 @@ object FakeAttemptRepository {
             questions = questions
         )
 
-        // 🔥 THIS IS THE KEY LINE
+        // 🔥 CRITICAL: notify observers
         _attemptsFlow.value = attempts.values.toList()
     }
 
@@ -53,7 +56,7 @@ object FakeAttemptRepository {
     }
 
     // -------------------------
-    // All attempts (Results History)
+    // Results history
     // -------------------------
     fun getAllAttempts(): List<AttemptResult> {
         return attempts.values.sortedByDescending { it.attemptedAt }
@@ -70,13 +73,29 @@ object FakeAttemptRepository {
     // Resume section (Dashboard)
     // -------------------------
     fun getResumeCourses(): List<ResumeCourseItem> {
-        return attempts.values.map {
-            ResumeCourseItem(
-                courseId = it.testId.substringBefore("-"),
-                courseTitle = it.testName,
-                progressPercent = ((it.correct + it.wrong) * 100) / it.totalQuestions,
-                lastTestId = it.testId
-            )
-        }
+        return attempts.values
+            .groupBy { it.testId.substringBefore("-") } // courseId
+            .map { (courseId, courseAttempts) ->
+
+                val totalTests = 2 // ⚠️ TEMP (later from Course data)
+                val attemptedTests = courseAttempts.size
+                val progressPercent = (attemptedTests * 100) / totalTests
+
+                val lastCompleted = courseAttempts.maxBy { it.attemptedAt }
+
+                ResumeCourseItem(
+                    courseId = courseId,
+                    courseTitle = lastCompleted.testName,
+                    totalTests = totalTests,
+                    attemptedTests = attemptedTests,
+                    progressPercent = progressPercent,
+                    nextTestId =
+                        if (attemptedTests < totalTests)
+                            "${courseId}-T${attemptedTests + 1}"
+                        else null,
+                    lastCompletedTestId = lastCompleted.testId
+                )
+            }
+            .filter { it.nextTestId != null } // hide completed courses
     }
 }

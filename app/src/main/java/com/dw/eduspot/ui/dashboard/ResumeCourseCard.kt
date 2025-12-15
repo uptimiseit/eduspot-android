@@ -32,9 +32,12 @@ fun ResumeCourseCard(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Text("${course.progressPercent}% completed")
+            Text(
+                text = "${course.progressPercent}% completed",
+                style = MaterialTheme.typography.bodySmall
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 

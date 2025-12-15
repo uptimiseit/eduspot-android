@@ -2,33 +2,27 @@ package com.dw.eduspot.navigation
 
 object Routes {
 
-    // -------------------------
-    // Root Flow
-    // -------------------------
+    // Root
     const val SPLASH = "splash"
     const val LOGIN = "login"
     const val MAIN = "main"
 
-    // -------------------------
-    // Bottom Navigation Tabs
-    // -------------------------
-    const val HOME = "home"                 // Dashboard
+    // Bottom tabs
+    const val HOME = "home"
     const val MY_COURSES = "my_courses"
-    const val RESULTS = "results"           // Results history (LIST)
+    const val RESULT = "result"
     const val PROFILE = "profile"
 
-    // -------------------------
-    // Secondary Screens
-    // -------------------------
+    // Internal pages
     const val SETTINGS = "settings"
     const val SUPPORT = "support"
     const val PURCHASE_HISTORY = "purchase_history"
 
-    // -------------------------
-    // Detail / Parameterized
-    // -------------------------
+    // Course & Test flow (inside shell)
     const val COURSE_DETAIL = "course_detail"
     const val TEST_LIST = "test_list"
+
+    // Full screen (root-owned)
     const val TEST_ENGINE = "test_engine"
     const val RESULT_DETAIL = "result_detail"
 }

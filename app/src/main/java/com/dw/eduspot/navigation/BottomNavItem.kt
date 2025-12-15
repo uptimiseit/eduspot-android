@@ -22,7 +22,7 @@ sealed class BottomNavItem(
     )
 
     object Results : BottomNavItem(
-        route = Routes.RESULTS,
+        route = Routes.RESULT,
         label = "Results",
         icon = Icons.Filled.BarChart
     )

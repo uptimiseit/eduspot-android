@@ -21,18 +21,22 @@ fun BottomBar(
 
     NavigationBar {
         items.forEach { item ->
-            val isSelected = currentRoute == item.route
-
             NavigationBarItem(
-                selected = isSelected,
+                selected = currentRoute == item.route,
                 onClick = {
-                    if (!isSelected) {
+                    if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            // 🔥 HARD RESET TO HOME GRAPH (FIXES DASHBOARD BUG)
-                            popUpTo(Routes.HOME) {
-                                inclusive = false
+
+                            // ✅ RESET tab to its root
+                            popUpTo(item.route) {
+                                inclusive = true
                             }
+
+                            // ✅ Avoid duplicate destinations
                             launchSingleTop = true
+
+                            // ❌ DO NOT restore deep state
+                            restoreState = false
                         }
                     }
                 },

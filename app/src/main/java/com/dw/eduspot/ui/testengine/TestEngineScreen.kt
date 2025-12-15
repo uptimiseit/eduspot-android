@@ -18,8 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun TestEngineScreen(
     testId: String,
     onTestFinished: () -> Unit
-) {
-    val viewModel: TestEngineViewModel = viewModel(
+) {    val viewModel: TestEngineViewModel = viewModel(
         factory = TestEngineViewModelFactory(testId)
     )
 

@@ -1,44 +1,45 @@
 package com.dw.eduspot.data.fake
 
-import com.dw.eduspot.domain.model.CourseItem
 import com.dw.eduspot.ui.dashboard.model.ResumeCourseItem
 
+/**
+ * Fake data ONLY for dashboard preview / testing
+ * Must strictly follow ResumeCourseItem contract
+ */
 object FakeDashboardRepository {
 
-    // -----------------------------
-    // Fake courses
-    // -----------------------------
-    private val courses = listOf(
-        CourseItem(
-            id = "NEET",
-            title = "NEET Full Course",
-            totalTests = 4
-        ),
-        CourseItem(
-            id = "UPSC",
-            title = "UPSC Prelims",
-            totalTests = 3
-        )
-    )
-
-    // -----------------------------
-    // Resume courses (dashboard)
-    // -----------------------------
     fun getResumeCourses(): List<ResumeCourseItem> {
+
+        // Fake scenario:
+        // Course has 2 tests, user completed only 1
+        val courseId = "NEET"
+        val courseTitle = "NEET Full Course"
+
+        val totalTests = 2
+        val attemptedTests = 1   // ✅ THIS WAS MISSING / MIS-SCOPED
+
+        val progressPercent = (attemptedTests * 100) / totalTests
+
+        // If fully completed → do not show in resume
+        if (attemptedTests >= totalTests) {
+            return emptyList()
+        }
+
         return listOf(
             ResumeCourseItem(
-                courseId = "NEET",
-                courseTitle = "NEET Full Course",
-                progressPercent = 50,
-                lastTestId = "NEET-T2"
+                courseId = courseId,
+                courseTitle = courseTitle,
+
+                totalTests = totalTests,
+                attemptedTests = attemptedTests,
+                progressPercent = progressPercent,
+
+                // Resume opens NEXT test
+                nextTestId = "$courseId-T${attemptedTests + 1}",
+
+                // Result screen uses LAST completed test
+                lastCompletedTestId = "$courseId-T$attemptedTests"
             )
         )
-    }
-
-    // -----------------------------
-    // Get course by ID (SAFE)
-    // -----------------------------
-    fun getCourseById(courseId: String): CourseItem? {
-        return courses.find { it.id == courseId }
     }
 }

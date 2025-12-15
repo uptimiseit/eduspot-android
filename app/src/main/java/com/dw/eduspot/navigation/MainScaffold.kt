@@ -7,123 +7,124 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.dw.eduspot.ui.course.CourseDetailScreen
 import com.dw.eduspot.ui.dashboard.DashboardScreen
 import com.dw.eduspot.ui.mycourses.MyCoursesScreen
-import com.dw.eduspot.ui.results.ResultsHistoryScreen
-import com.dw.eduspot.ui.purchase.PurchaseHistoryScreen
 import com.dw.eduspot.ui.profile.ProfileScreen
-import com.dw.eduspot.ui.support.SupportScreen
+import com.dw.eduspot.ui.results.ResultsHistoryScreen
 import com.dw.eduspot.ui.settings.SettingsScreen
-import com.dw.eduspot.ui.course.CourseDetailScreen
 import com.dw.eduspot.ui.testlist.TestListScreen
 
 @Composable
 fun MainScaffold(
-    onStartTest: (String) -> Unit,
-    onOpenResult: (String) -> Unit
+    rootNavController: NavHostController
 ) {
-    val navController = rememberNavController()
+    // 🔹 Bottom navigation controller (tabs only)
+    val bottomNavController = rememberNavController()
 
     Scaffold(
         bottomBar = {
-            BottomBar(navController)
+            BottomBar(bottomNavController)
         }
     ) { padding ->
 
         NavHost(
-            navController = navController,
+            navController = bottomNavController,
             startDestination = Routes.HOME,
             modifier = Modifier.padding(padding)
         ) {
 
-            // ---------------- DASHBOARD ----------------
+            /* ---------------- DASHBOARD ---------------- */
             composable(Routes.HOME) {
                 DashboardScreen(
                     onOpenCourse = { courseId ->
-                        navController.navigate("${Routes.COURSE_DETAIL}/$courseId")
+                        bottomNavController.navigate("${Routes.COURSE_DETAIL}/$courseId")
                     },
                     onResumeTest = { testId ->
-                        onStartTest(testId) // delegate to ROOT
+                        // 🔥 ALWAYS root
+                        rootNavController.navigate("${Routes.TEST_ENGINE}/$testId")
+                    },
+                    onOpenResult = { courseId ->
+                        // 🔥 Course completed → result history/detail
+                        bottomNavController.navigate(Routes.RESULT)
                     },
                     onOpenSettings = {
-                        navController.navigate(Routes.SETTINGS)
+                        bottomNavController.navigate(Routes.SETTINGS)
                     }
                 )
             }
 
-            // ---------------- MY COURSES ----------------
+            /* ---------------- MY COURSES ---------------- */
             composable(Routes.MY_COURSES) {
                 MyCoursesScreen(
                     onOpenCourse = { courseId ->
-                        navController.navigate("${Routes.COURSE_DETAIL}/$courseId")
+                        bottomNavController.navigate("${Routes.COURSE_DETAIL}/$courseId")
                     },
                     onOpenTests = { courseId ->
-                        navController.navigate("${Routes.TEST_LIST}/$courseId")
+                        bottomNavController.navigate("${Routes.TEST_LIST}/$courseId")
                     }
                 )
             }
 
-            // ---------------- RESULTS (LIST ONLY) ----------------
-            composable(Routes.RESULTS) {
+            /* ---------------- RESULTS ---------------- */
+            composable(Routes.RESULT) {
                 ResultsHistoryScreen(
                     onOpenResult = { testId ->
-                        onOpenResult(testId) // delegate to ROOT
+                        rootNavController.navigate("${Routes.RESULT_DETAIL}/$testId")
                     }
                 )
             }
 
-            // ---------------- PURCHASE HISTORY ----------------
-            composable(Routes.PURCHASE_HISTORY) {
-                PurchaseHistoryScreen()
-            }
-
-            // ---------------- PROFILE ----------------
+            /* ---------------- PROFILE ---------------- */
             composable(Routes.PROFILE) {
                 ProfileScreen(
                     onLogout = {
-                        // Root (Splash) handles logout
+                        rootNavController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.MAIN) { inclusive = true }
+                        }
                     }
                 )
             }
 
-            // ---------------- SUPPORT ----------------
-            composable(Routes.SUPPORT) {
-                SupportScreen()
-            }
-
-            // ---------------- SETTINGS ----------------
+            /* ---------------- SETTINGS ---------------- */
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = {
+                        bottomNavController.popBackStack()
+                    }
                 )
             }
 
-            // ---------------- COURSE DETAIL ----------------
+            /* ---------------- COURSE DETAIL ---------------- */
             composable("${Routes.COURSE_DETAIL}/{courseId}") { backStack ->
-                val courseId = backStack.arguments?.getString("courseId") ?: ""
+                val courseId = backStack.arguments?.getString("courseId")!!
 
                 CourseDetailScreen(
                     courseId = courseId,
                     onPurchaseSuccess = {
-                        navController.navigate(Routes.MY_COURSES)
+                        bottomNavController.navigate(Routes.MY_COURSES) {
+                            popUpTo(Routes.HOME)
+                        }
                     },
                     onOpenTests = {
-                        navController.navigate("${Routes.TEST_LIST}/$courseId")
+                        bottomNavController.navigate("${Routes.TEST_LIST}/$courseId")
                     }
                 )
             }
 
-            // ---------------- TEST LIST ----------------
+            /* ---------------- TEST LIST ---------------- */
             composable("${Routes.TEST_LIST}/{courseId}") { backStack ->
-                val courseId = backStack.arguments?.getString("courseId") ?: ""
+                val courseId = backStack.arguments?.getString("courseId")!!
 
                 TestListScreen(
                     courseId = courseId,
                     onStartTest = { testId ->
-                        onStartTest(testId) // delegate to ROOT
+                        // 🔥 ALWAYS root
+                        rootNavController.navigate("${Routes.TEST_ENGINE}/$testId")
                     }
                 )
             }

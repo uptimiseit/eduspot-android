@@ -20,14 +20,13 @@ import com.dw.eduspot.utils.DemoConstants
 fun DashboardScreen(
     onOpenCourse: (String) -> Unit,
     onResumeTest: (String) -> Unit,
+    onOpenResult: (String) -> Unit,
     onOpenSettings: () -> Unit
 ) {
-
     val viewModel: DashboardViewModel = hiltViewModel()
-
     val resumeCourses by viewModel.resumeCourses.collectAsState()
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
+    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var selectedCategory by remember {
         mutableStateOf(DashboardCategories.categories.first())
     }
@@ -54,7 +53,7 @@ fun DashboardScreen(
                 .padding(padding)
         ) {
 
-            /* ---------------- SEARCH ---------------- */
+            // ---------------- SEARCH ----------------
             item {
                 OutlinedTextField(
                     modifier = Modifier
@@ -67,24 +66,21 @@ fun DashboardScreen(
                 )
             }
 
-            /* ---------------- CATEGORIES ---------------- */
+            // ---------------- CATEGORIES ----------------
             item {
                 CategorySection(
                     categories = DashboardCategories.categories,
                     selectedCategoryId = selectedCategory.id,
-                    onCategorySelected = { category ->
-                        selectedCategory = category
-                        // Later: ViewModel filter trigger
-                    }
+                    onCategorySelected = { selectedCategory = it }
                 )
             }
 
-            /* ---------------- BANNER ---------------- */
+            // ---------------- BANNER ----------------
             item {
                 BannerSection()
             }
 
-            /* ---------------- DEMO EXAM ---------------- */
+            // ---------------- DEMO EXAM ----------------
             item {
                 DemoExamCard(
                     onStartDemo = {
@@ -93,19 +89,30 @@ fun DashboardScreen(
                 )
             }
 
-            /* ---------------- RESUME TEST ---------------- */
+            // ---------------- RESUME SECTION ----------------
             if (resumeCourses.isNotEmpty()) {
+
+                item {
+                    SectionTitle(title = "Resume Your Course")
+                }
+
                 item {
                     ResumeTestSection(
                         courses = resumeCourses,
-                        onResumeTest = onResumeTest
+                        onResume = { course ->
+                            if (course.nextTestId != null) {
+                                onResumeTest(course.nextTestId)
+                            } else {
+                                onOpenResult(course.courseId)
+                            }
+                        }
                     )
                 }
             }
 
-            /* ---------------- POPULAR EXAMS ---------------- */
+            // ---------------- POPULAR EXAMS ----------------
             item {
-                SectionTitle("Popular Exams")
+                SectionTitle(title = "Popular Exams")
             }
 
             item {
@@ -121,9 +128,9 @@ fun DashboardScreen(
                 }
             }
 
-            /* ---------------- NEW EXAMS ---------------- */
+            // ---------------- NEW EXAMS ----------------
             item {
-                SectionTitle("New Exams")
+                SectionTitle(title = "New Exams")
             }
 
             items(DashboardFakeData.newExams) { exam ->
@@ -134,8 +141,17 @@ fun DashboardScreen(
 }
 
 /* ===================================================== */
-/* ================== UI COMPONENTS ==================== */
+/* ================= REUSABLE UI ======================= */
 /* ===================================================== */
+
+@Composable
+private fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        style = MaterialTheme.typography.titleLarge
+    )
+}
 
 @Composable
 private fun ExamCard(
@@ -150,15 +166,9 @@ private fun ExamCard(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = exam.title,
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text(exam.title, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = exam.description,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text(exam.description, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -172,24 +182,9 @@ private fun ExamListItem(exam: ExamItem) {
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = exam.title,
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text(exam.title, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = exam.description,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text(exam.description, style = MaterialTheme.typography.bodyMedium)
         }
     }
-}
-
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        text = title,
-        style = MaterialTheme.typography.titleLarge
-    )
 }

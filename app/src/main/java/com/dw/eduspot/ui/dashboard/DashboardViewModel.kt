@@ -11,19 +11,14 @@ import kotlinx.coroutines.flow.stateIn
 
 class DashboardViewModel : ViewModel() {
 
+    /**
+     * 🔥 Reactive resume section
+     * Automatically updates when a test is submitted
+     */
     val resumeCourses: StateFlow<List<ResumeCourseItem>> =
         FakeAttemptRepository.attemptsFlow
-            .map { attempts ->
-                attempts.map { attempt ->
-                    ResumeCourseItem(
-                        courseId = attempt.testId.substringBefore("-"),
-                        courseTitle = attempt.testName,
-                        progressPercent =
-                            ((attempt.correct + attempt.wrong) * 100) /
-                                    attempt.totalQuestions,
-                        lastTestId = attempt.testId
-                    )
-                }
+            .map {
+                FakeAttemptRepository.getResumeCourses()
             }
             .stateIn(
                 scope = viewModelScope,

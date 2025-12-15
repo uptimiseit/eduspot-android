@@ -12,90 +12,74 @@ import com.dw.eduspot.ui.testengine.TestEngineScreen
 @Composable
 fun AppNavHost() {
 
-    val navController = rememberNavController()
+    // ✅ ONE root NavController for whole app
+    val rootNavController = rememberNavController()
 
     NavHost(
-        navController = navController,
+        navController = rootNavController,
         startDestination = Routes.SPLASH
     ) {
 
-        // --------------------
-        // Splash
-        // --------------------
+        // ---------------- SPLASH ----------------
         composable(Routes.SPLASH) {
             SplashScreen(
                 onNavigateToLogin = {
-                    navController.navigate(Routes.LOGIN) {
+                    rootNavController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
                 },
                 onNavigateToDashboard = {
-                    navController.navigate(Routes.MAIN) {
+                    rootNavController.navigate(Routes.MAIN) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
                 }
             )
         }
 
-        // --------------------
-        // Login
-        // --------------------
+        // ---------------- LOGIN ----------------
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Routes.MAIN) {
+                    rootNavController.navigate(Routes.MAIN) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
             )
         }
 
-        // --------------------
-        // Main App (Bottom Nav)
-        // --------------------
+        // ---------------- MAIN (Bottom Tabs) ----------------
         composable(Routes.MAIN) {
             MainScaffold(
-                onStartTest = { testId ->
-                    navController.navigate("${Routes.TEST_ENGINE}/$testId")
-                },
-                onOpenResult = { testId ->
-                    navController.navigate("${Routes.RESULT_DETAIL}/$testId")
-                }
+                rootNavController = rootNavController
             )
         }
 
-        // --------------------
-        // Test Engine (Full Screen)
-        // --------------------
-        composable("${Routes.TEST_ENGINE}/{testId}") { backStackEntry ->
-            val testId =
-                backStackEntry.arguments?.getString("testId")
-                    ?: return@composable
+        // ---------------- TEST ENGINE ----------------
+        composable("${Routes.TEST_ENGINE}/{testId}") { backStack ->
+            val testId = backStack.arguments?.getString("testId")!!
 
             TestEngineScreen(
                 testId = testId,
                 onTestFinished = {
-                    navController.navigate("${Routes.RESULTS}/$testId") {
-                        popUpTo("${Routes.TEST_ENGINE}/$testId") {
-                            inclusive = true
-                        }
-                    }
+                    rootNavController.navigate(
+                        "${Routes.RESULT_DETAIL}/$testId"
+                    )
                 }
             )
         }
 
-        // --------------------
-        // Result Screen
-        // --------------------
-        composable("${Routes.RESULTS}/{testId}") { backStackEntry ->
-            val testId =
-                backStackEntry.arguments?.getString("testId")
-                    ?: return@composable
+        // ---------------- RESULT DETAIL ----------------
+        composable("${Routes.RESULT_DETAIL}/{testId}") { backStack ->
+            val testId = backStack.arguments?.getString("testId")!!
 
             ResultScreen(
                 testId = testId,
                 onBack = {
-                    navController.popBackStack(Routes.MAIN, false)
+                    // Go back to dashboard tab safely
+                    rootNavController.popBackStack(
+                        Routes.MAIN,
+                        inclusive = false
+                    )
                 }
             )
         }
