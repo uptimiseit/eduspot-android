@@ -1,0 +1,101 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt)
+    // google services & crashlytics optional - enable when you add google-services.json
+    // alias(libs.plugins.google.services)
+    // alias(libs.plugins.firebase.crashlytics)
+}
+
+android {
+    namespace = "com.dw.eduspot"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.dw.eduspot"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        debug {
+            isMinifyEnabled = false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        // modern kotlin toolchain (avoid deprecated jvmTarget)
+        jvmToolchain {
+            (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(17))
+
+        }
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+dependencies {
+    // Core + Compose
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.datastore.preferences)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.splashscreen)
+    implementation(libs.androidx.compose.material.icons.extended)
+
+    // Hilt + Nav Hilt
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    kapt(libs.hilt.compiler)
+
+    // Firebase - enable when google-services.json present
+    // implementation(platform(libs.firebase.bom))
+    // implementation(libs.firebase.auth)
+    // implementation(libs.firebase.messaging)
+    // implementation(libs.firebase.crashlytics)
+
+    // Utils
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // Debug
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+}
