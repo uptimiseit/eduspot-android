@@ -38,10 +38,7 @@ fun TestPreparingScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(6.dp)
+                progress = { progress / 100f }
             )
 
             Spacer(modifier = Modifier.height(12.dp))

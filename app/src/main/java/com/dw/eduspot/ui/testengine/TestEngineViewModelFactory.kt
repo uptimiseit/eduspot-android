@@ -7,7 +7,15 @@ class TestEngineViewModelFactory(
     private val attemptId: String,
     private val testId: String
 ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(c: Class<T>): T {
-        return TestEngineViewModel(attemptId, testId) as T
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(TestEngineViewModel::class.java)) {
+            return TestEngineViewModel(
+                attemptId = attemptId,
+                testId = testId
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

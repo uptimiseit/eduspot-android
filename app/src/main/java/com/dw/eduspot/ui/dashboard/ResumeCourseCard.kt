@@ -1,5 +1,6 @@
 package com.dw.eduspot.ui.dashboard
 
+import android.R.attr.progress
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -40,8 +41,7 @@ fun ResumeCourseCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             LinearProgressIndicator(
-                progress = course.progressPercent / 100f,
-                modifier = Modifier.fillMaxWidth()
+                progress = { progress / 100f }
             )
 
             Spacer(modifier = Modifier.height(6.dp))

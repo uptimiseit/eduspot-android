@@ -70,8 +70,7 @@ fun AttemptSelectionScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         LinearProgressIndicator(
-                            progress = progress / 100f,
-                            modifier = Modifier.fillMaxWidth()
+                            progress = { progress / 100f }
                         )
 
                         Spacer(modifier = Modifier.height(6.dp))
