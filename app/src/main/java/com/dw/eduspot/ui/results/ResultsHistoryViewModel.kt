@@ -19,13 +19,24 @@ class ResultsHistoryViewModel : ViewModel() {
 
     private fun loadResults() {
         val attempts = FakeAttemptRepository.getAllAttempts()
+        val courseAttempts =
+            attempts.groupBy { it.testId.substringBefore("-") }
 
         _results.value = attempts.map { attempt ->
+
+            val attemptNumber =
+                courseAttempts[attempt.testId.substringBefore("-")]
+                    ?.sortedBy { it.attemptedAt }
+                    ?.indexOfFirst { it.testId == attempt.testId }
+                    ?.plus(1) ?: 1
+
             ResultListItem(
+                attemptId = attempt.testId, // temp mapping
                 testId = attempt.testId,
                 title = attempt.testName,
                 scoreText = "Score: ${attempt.score}/${attempt.totalQuestions}",
-                dateText = formatDate(attempt.attemptedAt)
+                dateText = formatDate(attempt.attemptedAt),
+                attemptNumber = attemptNumber
             )
         }
     }

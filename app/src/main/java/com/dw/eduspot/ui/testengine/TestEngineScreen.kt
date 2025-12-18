@@ -16,11 +16,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestEngineScreen(
+    attemptId: String,
     testId: String,
     onTestFinished: () -> Unit
 ) {    val viewModel: TestEngineViewModel = viewModel(
-        factory = TestEngineViewModelFactory(testId)
+    factory = TestEngineViewModelFactory(
+        attemptId = attemptId,
+        testId = testId
     )
+)
 
     val state by viewModel.uiState.collectAsState()
 

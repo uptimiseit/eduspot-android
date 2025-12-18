@@ -25,4 +25,8 @@ object Routes {
     // Full screen (root-owned)
     const val TEST_ENGINE = "test_engine"
     const val RESULT_DETAIL = "result_detail"
+    const val TEST_GUIDELINES = "test_guidelines"
+    const val TEST_PREPARING = "test_preparing"
+    const val ATTEMPT_SELECTION = "attempt_selection"
+
 }

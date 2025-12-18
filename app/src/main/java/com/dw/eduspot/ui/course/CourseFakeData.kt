@@ -4,7 +4,8 @@ data class Course(
     val id: String,
     val title: String,
     val description: String,
-    val price: String
+    val price: String,
+    val totalTests: Int   // ✅ ADD THIS
 )
 
 object CourseFakeData {
@@ -12,22 +13,25 @@ object CourseFakeData {
     fun getCourseById(id: String): Course {
         return when (id) {
             "UPSC" -> Course(
-                id = "UPSC",
-                title = "UPSC Full Mock Test",
-                description = "Complete UPSC mock test series with analysis.",
-                price = "₹999"
+                id = "REET",
+                title = "REET Full Course",
+                description = "...",
+                price = "₹999",
+                totalTests = 2
             )
             "REET" -> Course(
                 id = "REET",
                 title = "REET Exam Mock Test",
                 description = "Rajasthan REET level mock tests.",
-                price = "₹499"
+                price = "₹499",
+                totalTests = 2
             )
             else -> Course(
                 id = "NEET",
                 title = "NEET Medical Mock Test",
                 description = "Medical entrance mock tests with ranking.",
-                price = "₹1299"
+                price = "₹1299",
+                totalTests = 2
             )
         }
     }

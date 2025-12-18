@@ -4,23 +4,41 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.dw.eduspot.data.fake.FakeAttemptRepository
+import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestListScreen(
     courseId: String,
+    attemptId: String,
     onStartTest: (String) -> Unit
 ) {
     val tests = TestFakeData.getTestsForCourse(courseId)
 
+    val attempts by FakeCourseAttemptRepository.attempts.collectAsState()
+    val courseAttempt = attempts.firstOrNull { it.attemptId == attemptId }
+
+    val attemptNumber =
+        attempts
+            .filter { it.courseId == courseId }
+            .sortedBy { it.startedAt }
+            .indexOfFirst { it.attemptId == attemptId } + 1
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mock Tests") }
+                title = {
+                    Column {
+                        Text(courseAttempt?.courseTitle ?: "")
+                        Text(
+                            text = "Attempt #$attemptNumber",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -34,7 +52,7 @@ fun TestListScreen(
             items(tests) { test ->
 
                 val isAttempted =
-                    FakeAttemptRepository.hasAttempted(test.id)
+                    courseAttempt?.completedTestIds?.contains(test.id) == true
 
                 Card(
                     modifier = Modifier
@@ -43,9 +61,7 @@ fun TestListScreen(
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
 
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
 
                         Text(
                             text = test.title,
@@ -61,23 +77,19 @@ fun TestListScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // ✅ SINGLE SOURCE OF TRUTH FOR ATTEMPT
                         Button(
-                            onClick = {
-                                onStartTest(test.id)
-                            },
+                            onClick = { onStartTest(test.id) },
                             enabled = !isAttempted,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (isAttempted)
+                                if (isAttempted)
                                     "Already Attempted"
                                 else
                                     "Start Test"
                             )
                         }
 
-                        // ✅ OPTIONAL MESSAGE
                         if (isAttempted) {
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(

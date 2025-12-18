@@ -83,6 +83,7 @@ dependencies {
     // Hilt + Nav Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.room.common.jvm)
     kapt(libs.hilt.compiler)
 
     // Firebase - enable when google-services.json present
@@ -98,4 +99,9 @@ dependencies {
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Room (LOCAL DATABASE)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
 }

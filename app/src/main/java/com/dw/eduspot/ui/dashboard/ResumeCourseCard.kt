@@ -21,8 +21,20 @@ fun ResumeCourseCard(
         Column(modifier = Modifier.padding(16.dp)) {
 
             Text(
-                text = course.courseTitle,
+                text = "${course.courseTitle} • Attempt #${course.attemptNumber}",
                 style = MaterialTheme.typography.titleMedium
+            )
+            AssistChip(
+                onClick = {},
+                label = { Text("Attempt #${course.attemptNumber}") }
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Attempt ID: ${course.attemptId.takeLast(6)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -34,10 +46,7 @@ fun ResumeCourseCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = "${course.progressPercent}% completed",
-                style = MaterialTheme.typography.bodySmall
-            )
+            Text("${course.progressPercent}% completed")
 
             Spacer(modifier = Modifier.height(12.dp))
 

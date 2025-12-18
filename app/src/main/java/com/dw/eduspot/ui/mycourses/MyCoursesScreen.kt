@@ -9,17 +9,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.dw.eduspot.data.fake.FakeCourseRepository
+import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
 
 @Composable
 fun MyCoursesScreen(
     onOpenCourse: (String) -> Unit,
-    onOpenTests: (String) -> Unit
+    onOpenTests: (String, String) -> Unit // courseId, attemptId
 ) {
+    val attempts by FakeCourseAttemptRepository.attempts.collectAsState()
 
-    val myCourses by FakeCourseRepository.myCourses.collectAsState()
-
-    if (myCourses.isEmpty()) {
+    if (attempts.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -27,25 +26,28 @@ fun MyCoursesScreen(
             Text("No courses purchased yet")
         }
     } else {
-        LazyColumn(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            items(myCourses) { course ->
+        LazyColumn(modifier = Modifier.padding(16.dp)) {
+            items(attempts) { attempt ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clickable {
-                            onOpenTests(course.id)
+                            onOpenTests(
+                                attempt.courseId,
+                                attempt.attemptId
+                            )
                         }
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = course.title,
+                            text = attempt.courseTitle,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(course.description)
+                        Text(
+                            "Progress: ${attempt.completedTestIds.size}/${attempt.totalTests}"
+                        )
                     }
                 }
             }

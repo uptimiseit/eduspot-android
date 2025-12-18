@@ -11,24 +11,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun CourseDetailScreen(
     courseId: String,
-    onPurchaseSuccess: () -> Unit,
-    onOpenTests: () -> Unit
+    onPurchaseSuccess: (String) -> Unit,
+    onOpenTests: (String) -> Unit
 ) {
     val course = remember { CourseFakeData.getCourseById(courseId) }
     val viewModel: CourseViewModel = viewModel()
-    val purchased by viewModel.purchased.collectAsState()
 
-    LaunchedEffect(purchased) {
-        if (purchased) {
-            onPurchaseSuccess()
-        }
+    val attemptId by viewModel.purchaseResult.collectAsState()
+    LaunchedEffect(attemptId) {
+        attemptId?.let { onPurchaseSuccess(it) }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(course.title) }
-            )
+            TopAppBar(title = { Text(course.title) })
         }
     ) { padding ->
 
@@ -38,17 +34,9 @@ fun CourseDetailScreen(
                 .padding(16.dp)
         ) {
 
-            Text(
-                text = course.description,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
+            Text(course.description)
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Price: ${course.price}",
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text("Price: ${course.price}")
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -56,7 +44,7 @@ fun CourseDetailScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { viewModel.buyCourse(course) }
             ) {
-                Text("Buy Course")
+                Text("Buy Again") // 🔥 STEP 10 UX
             }
         }
     }

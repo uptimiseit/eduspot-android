@@ -8,6 +8,8 @@ import com.dw.eduspot.ui.auth.LoginScreen
 import com.dw.eduspot.ui.results.ResultScreen
 import com.dw.eduspot.ui.splash.SplashScreen
 import com.dw.eduspot.ui.testengine.TestEngineScreen
+import com.dw.eduspot.ui.guidelines.TestGuidelinesScreen
+import com.dw.eduspot.ui.preparing.TestPreparingScreen
 
 @Composable
 fun AppNavHost() {
@@ -20,7 +22,7 @@ fun AppNavHost() {
         startDestination = Routes.SPLASH
     ) {
 
-        // ---------------- SPLASH ----------------
+        /* ---------------- SPLASH ---------------- */
         composable(Routes.SPLASH) {
             SplashScreen(
                 onNavigateToLogin = {
@@ -36,7 +38,7 @@ fun AppNavHost() {
             )
         }
 
-        // ---------------- LOGIN ----------------
+        /* ---------------- LOGIN ---------------- */
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
@@ -47,39 +49,77 @@ fun AppNavHost() {
             )
         }
 
-        // ---------------- MAIN (Bottom Tabs) ----------------
+        /* ---------------- MAIN (Bottom Tabs) ---------------- */
         composable(Routes.MAIN) {
             MainScaffold(
                 rootNavController = rootNavController
             )
         }
 
-        // ---------------- TEST ENGINE ----------------
-        composable("${Routes.TEST_ENGINE}/{testId}") { backStack ->
-            val testId = backStack.arguments?.getString("testId")!!
+        /* ---------------- TEST GUIDELINES ---------------- */
+        composable("${Routes.TEST_GUIDELINES}/{attemptId}/{testId}") {
+            val attemptId = it.arguments!!.getString("attemptId")!!
+            val testId = it.arguments!!.getString("testId")!!
 
-            TestEngineScreen(
+            TestGuidelinesScreen(
                 testId = testId,
-                onTestFinished = {
+                onBack = { rootNavController.popBackStack() },
+                onReady = {
                     rootNavController.navigate(
-                        "${Routes.RESULT_DETAIL}/$testId"
+                        "${Routes.TEST_PREPARING}/$attemptId/$testId"
                     )
                 }
             )
         }
 
-        // ---------------- RESULT DETAIL ----------------
-        composable("${Routes.RESULT_DETAIL}/{testId}") { backStack ->
-            val testId = backStack.arguments?.getString("testId")!!
+
+
+        /* ---------------- TEST PREPARING ---------------- */
+        composable("${Routes.TEST_PREPARING}/{attemptId}/{testId}") {
+            val attemptId = it.arguments!!.getString("attemptId")!!
+            val testId = it.arguments!!.getString("testId")!!
+
+            TestPreparingScreen(
+                onPrepared = {
+                    rootNavController.navigate(
+                        "${Routes.TEST_ENGINE}/$attemptId/$testId"
+                    ) {
+                        popUpTo("${Routes.TEST_GUIDELINES}/$attemptId/$testId") {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        /* ---------------- TEST ENGINE ---------------- */
+        composable("${Routes.TEST_ENGINE}/{attemptId}/{testId}") { backStack ->
+            val attemptId = backStack.arguments!!.getString("attemptId")!!
+            val testId = backStack.arguments!!.getString("testId")!!
+
+            TestEngineScreen(
+                attemptId = attemptId,
+                testId = testId,
+                onTestFinished = {
+                    rootNavController.navigate(
+                        "${Routes.RESULT_DETAIL}/$attemptId/$testId"
+                    ) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        /* ---------------- RESULT DETAIL ---------------- */
+        composable("${Routes.RESULT_DETAIL}/{attemptId}/{testId}") { backStack ->
+            val attemptId = backStack.arguments!!.getString("attemptId")!!
+            val testId = backStack.arguments!!.getString("testId")!!
 
             ResultScreen(
+                attemptId = attemptId,
                 testId = testId,
                 onBack = {
-                    // Go back to dashboard tab safely
-                    rootNavController.popBackStack(
-                        Routes.MAIN,
-                        inclusive = false
-                    )
+                    rootNavController.popBackStack(Routes.MAIN, false)
                 }
             )
         }

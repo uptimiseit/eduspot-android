@@ -2,25 +2,17 @@ package com.dw.eduspot.data.fake
 
 import com.dw.eduspot.domain.model.AttemptResult
 import com.dw.eduspot.domain.model.QuestionResult
-import com.dw.eduspot.ui.dashboard.model.ResumeCourseItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 object FakeAttemptRepository {
 
-    // -------------------------
-    // In-memory attempt store
-    // -------------------------
-    private val attempts = mutableMapOf<String, AttemptResult>()
+    private val map = mutableMapOf<String, AttemptResult>()
+    private val _flow = MutableStateFlow<List<AttemptResult>>(emptyList())
+    val attemptsFlow: StateFlow<List<AttemptResult>> = _flow
 
-    private val _attemptsFlow =
-        MutableStateFlow<List<AttemptResult>>(emptyList())
-    val attemptsFlow: StateFlow<List<AttemptResult>> = _attemptsFlow
-
-    // -------------------------
-    // Save attempt (called from TestEngine)
-    // -------------------------
     fun saveResult(
+        attemptId: String,
         testId: String,
         testName: String,
         totalQuestions: Int,
@@ -31,7 +23,10 @@ object FakeAttemptRepository {
         timeTakenSeconds: Int,
         questions: List<QuestionResult>
     ) {
-        attempts[testId] = AttemptResult(
+        val key = "$attemptId-$testId"
+
+        map[key] = AttemptResult(
+            attemptId = attemptId,
             testId = testId,
             testName = testName,
             totalQuestions = totalQuestions,
@@ -44,58 +39,15 @@ object FakeAttemptRepository {
             questions = questions
         )
 
-        // 🔥 CRITICAL: notify observers
-        _attemptsFlow.value = attempts.values.toList()
+        _flow.value = map.values.toList()
     }
 
-    // -------------------------
-    // Single attempt lookup
-    // -------------------------
-    fun getAttempt(testId: String): AttemptResult? {
-        return attempts[testId]
-    }
+    fun hasAttempted(attemptId: String, testId: String): Boolean =
+        map.containsKey("$attemptId-$testId")
 
-    // -------------------------
-    // Results history
-    // -------------------------
-    fun getAllAttempts(): List<AttemptResult> {
-        return attempts.values.sortedByDescending { it.attemptedAt }
-    }
+    fun getAttempt(attemptId: String, testId: String): AttemptResult? =
+        map["$attemptId-$testId"]
 
-    // -------------------------
-    // Single-attempt rule
-    // -------------------------
-    fun hasAttempted(testId: String): Boolean {
-        return attempts.containsKey(testId)
-    }
-
-    // -------------------------
-    // Resume section (Dashboard)
-    // -------------------------
-    fun getResumeCourses(): List<ResumeCourseItem> {
-        return attempts.values
-            .groupBy { it.testId.substringBefore("-") } // courseId
-            .map { (courseId, courseAttempts) ->
-
-                val totalTests = 2 // ⚠️ TEMP (later from Course data)
-                val attemptedTests = courseAttempts.size
-                val progressPercent = (attemptedTests * 100) / totalTests
-
-                val lastCompleted = courseAttempts.maxBy { it.attemptedAt }
-
-                ResumeCourseItem(
-                    courseId = courseId,
-                    courseTitle = lastCompleted.testName,
-                    totalTests = totalTests,
-                    attemptedTests = attemptedTests,
-                    progressPercent = progressPercent,
-                    nextTestId =
-                        if (attemptedTests < totalTests)
-                            "${courseId}-T${attemptedTests + 1}"
-                        else null,
-                    lastCompletedTestId = lastCompleted.testId
-                )
-            }
-            .filter { it.nextTestId != null } // hide completed courses
-    }
+    fun getAllAttempts(): List<AttemptResult> =
+        map.values.sortedByDescending { it.attemptedAt }
 }

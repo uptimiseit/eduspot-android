@@ -18,8 +18,9 @@ import com.dw.eduspot.utils.DemoConstants
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onOpenCourse: (String) -> Unit,
-    onResumeTest: (String) -> Unit,
+    onOpenCourse: (String) -> Unit,      // Popular exams
+    onOpenTestList: (String, String) -> Unit,    // Resume
+    onResumeTest: (String) -> Unit,      // Demo only
     onOpenResult: (String) -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -37,10 +38,7 @@ fun DashboardScreen(
                 title = { Text("EDUSPOT") },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
-                        )
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
             )
@@ -53,7 +51,7 @@ fun DashboardScreen(
                 .padding(padding)
         ) {
 
-            // ---------------- SEARCH ----------------
+            /* ---------------- SEARCH ---------------- */
             item {
                 OutlinedTextField(
                     modifier = Modifier
@@ -66,7 +64,7 @@ fun DashboardScreen(
                 )
             }
 
-            // ---------------- CATEGORIES ----------------
+            /* ---------------- CATEGORIES ---------------- */
             item {
                 CategorySection(
                     categories = DashboardCategories.categories,
@@ -75,12 +73,10 @@ fun DashboardScreen(
                 )
             }
 
-            // ---------------- BANNER ----------------
-            item {
-                BannerSection()
-            }
+            /* ---------------- BANNER ---------------- */
+            item { BannerSection() }
 
-            // ---------------- DEMO EXAM ----------------
+            /* ---------------- DEMO EXAM ---------------- */
             item {
                 DemoExamCard(
                     onStartDemo = {
@@ -89,31 +85,23 @@ fun DashboardScreen(
                 )
             }
 
-            // ---------------- RESUME SECTION ----------------
+            /* ---------------- RESUME COURSE ---------------- */
             if (resumeCourses.isNotEmpty()) {
 
-                item {
-                    SectionTitle(title = "Resume Your Course")
-                }
+                item { SectionTitle("Resume Your Course") }
 
                 item {
                     ResumeTestSection(
                         courses = resumeCourses,
                         onResume = { course ->
-                            if (course.nextTestId != null) {
-                                onResumeTest(course.nextTestId)
-                            } else {
-                                onOpenResult(course.courseId)
-                            }
+                            onOpenTestList(course.courseId, course.attemptId)
                         }
                     )
                 }
             }
 
-            // ---------------- POPULAR EXAMS ----------------
-            item {
-                SectionTitle(title = "Popular Exams")
-            }
+            /* ---------------- POPULAR EXAMS ---------------- */
+            item { SectionTitle("Popular Exams") }
 
             item {
                 LazyRow(
@@ -128,20 +116,18 @@ fun DashboardScreen(
                 }
             }
 
-            // ---------------- NEW EXAMS ----------------
-            item {
-                SectionTitle(title = "New Exams")
-            }
+            /* ---------------- NEW EXAMS ---------------- */
+            item { SectionTitle("New Exams") }
 
             items(DashboardFakeData.newExams) { exam ->
-                ExamListItem(exam = exam)
+                ExamListItem(exam)
             }
         }
     }
 }
 
 /* ===================================================== */
-/* ================= REUSABLE UI ======================= */
+/* ================== UI HELPERS ======================= */
 /* ===================================================== */
 
 @Composable
@@ -165,7 +151,7 @@ private fun ExamCard(
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(Modifier.padding(16.dp)) {
             Text(exam.title, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
             Text(exam.description, style = MaterialTheme.typography.bodyMedium)
@@ -181,7 +167,7 @@ private fun ExamListItem(exam: ExamItem) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(Modifier.padding(16.dp)) {
             Text(exam.title, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(exam.description, style = MaterialTheme.typography.bodyMedium)

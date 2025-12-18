@@ -14,7 +14,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultsHistoryScreen(
-    onOpenResult: (String) -> Unit,
+    onOpenResult: (String, String) -> Unit, // attemptId, testId
     viewModel: ResultsHistoryViewModel = hiltViewModel()
 ) {
     val results by viewModel.results.collectAsState()
@@ -51,7 +51,7 @@ fun ResultsHistoryScreen(
                             .fillMaxWidth()
                             .padding(bottom = 12.dp)
                             .clickable {
-                                onOpenResult(item.testId)
+                                onOpenResult(item.attemptId, item.testId)
                             },
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
@@ -59,7 +59,7 @@ fun ResultsHistoryScreen(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = item.title,
+                                text = "${item.title} • Attempt #${item.attemptNumber}",
                                 style = MaterialTheme.typography.titleMedium
                             )
 

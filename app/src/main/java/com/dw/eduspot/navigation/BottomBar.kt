@@ -16,8 +16,9 @@ fun BottomBar(
         BottomNavItem.Profile
     )
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentRoute =
+        navController.currentBackStackEntryAsState().value
+            ?.destination?.route
 
     NavigationBar {
         items.forEach { item ->
@@ -26,29 +27,13 @@ fun BottomBar(
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-
-                            // ✅ RESET tab to its root
-                            popUpTo(item.route) {
-                                inclusive = true
-                            }
-
-                            // ✅ Avoid duplicate destinations
+                            popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
-
-                            // ❌ DO NOT restore deep state
-                            restoreState = false
                         }
                     }
                 },
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label
-                    )
-                },
-                label = {
-                    Text(text = item.label)
-                }
+                icon = { Icon(item.icon, item.label) },
+                label = { Text(item.label) }
             )
         }
     }

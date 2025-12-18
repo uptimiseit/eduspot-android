@@ -1,15 +1,12 @@
 package com.dw.eduspot.ui.dashboard.model
 
 data class ResumeCourseItem(
+    val attemptId: String,
     val courseId: String,
     val courseTitle: String,
-
-    // Progress info
+    val attemptNumber: Int,        // 🔥 NEW
     val totalTests: Int,
     val attemptedTests: Int,
     val progressPercent: Int,
-
-    // Navigation
-    val nextTestId: String?,       // null = course completed
-    val lastCompletedTestId: String? // used to open result
+    val lastCompletedTestId: String?
 )

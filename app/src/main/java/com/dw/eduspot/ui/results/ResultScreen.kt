@@ -14,11 +14,15 @@ import com.dw.eduspot.domain.model.QuestionResult
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
+    attemptId: String,
     testId: String,
     onBack: () -> Unit
 ) {
     val viewModel: ResultViewModel = viewModel(
-        factory = ResultViewModelFactory(testId)
+        factory = ResultViewModelFactory(
+            attemptId = attemptId,
+            testId = testId
+        )
     )
 
     val state by viewModel.uiState.collectAsState()

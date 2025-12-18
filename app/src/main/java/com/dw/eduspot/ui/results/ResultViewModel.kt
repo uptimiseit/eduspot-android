@@ -7,20 +7,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class ResultViewModel(
-    testId: String
+    private val attemptId: String,
+    private val testId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ResultUiState())
     val uiState: StateFlow<ResultUiState> = _uiState
 
     init {
-        loadResult(testId)
+        loadResult()
     }
 
-    private fun loadResult(testId: String) {
-        val result: AttemptResult =
-            FakeAttemptRepository.getAttempt(testId)
-                ?: return // ✅ prevent crash (defensive)
+    private fun loadResult() {
+        val result =
+            FakeAttemptRepository.getAttempt(attemptId, testId)
+                ?: return
 
         _uiState.value = ResultUiState(
             testId = result.testId,
@@ -34,8 +35,8 @@ class ResultViewModel(
     }
 
     private fun formatTime(seconds: Int): String {
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
-        return "${minutes}m ${remainingSeconds}s"
+        val m = seconds / 60
+        val s = seconds % 60
+        return "${m}m ${s}s"
     }
 }

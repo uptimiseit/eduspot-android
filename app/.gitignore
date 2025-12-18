@@ -1,25 +1,7 @@
-# Built files
-/build
-/app/build
-
-# Gradle
-.gradle
+.idea/
+.gradle/
+build/
+app/build/
 local.properties
-
-# Android Studio
-.idea
 *.iml
 .DS_Store
-
-# Keystore
-*.jks
-*.keystore
-
-# Logs
-*.log
-
-# Crashlytics
-crashlytics-build.properties
-
-# Kotlin
-.kotlin

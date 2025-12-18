@@ -11,6 +11,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
+import com.dw.eduspot.ui.attempts.AttemptSelectionScreen
 import com.dw.eduspot.ui.course.CourseDetailScreen
 import com.dw.eduspot.ui.dashboard.DashboardScreen
 import com.dw.eduspot.ui.mycourses.MyCoursesScreen
@@ -23,7 +25,6 @@ import com.dw.eduspot.ui.testlist.TestListScreen
 fun MainScaffold(
     rootNavController: NavHostController
 ) {
-    // 🔹 Bottom navigation controller (tabs only)
     val bottomNavController = rememberNavController()
 
     Scaffold(
@@ -41,17 +42,58 @@ fun MainScaffold(
             /* ---------------- DASHBOARD ---------------- */
             composable(Routes.HOME) {
                 DashboardScreen(
+
+                    // 🔥 FIXED ENTRY LOGIC
                     onOpenCourse = { courseId ->
-                        bottomNavController.navigate("${Routes.COURSE_DETAIL}/$courseId")
+
+                        val attempts =
+                            FakeCourseAttemptRepository
+                                .attempts
+                                .value
+                                .filter { it.courseId == courseId }
+
+                        when {
+                            // ❌ Not purchased yet
+                            attempts.isEmpty() -> {
+                                bottomNavController.navigate(
+                                    "${Routes.COURSE_DETAIL}/$courseId"
+                                )
+                            }
+
+                            // ✅ Exactly one attempt → go directly to test list
+                            attempts.size == 1 -> {
+                                bottomNavController.navigate(
+                                    "${Routes.TEST_LIST}/$courseId/${attempts.first().attemptId}"
+                                )
+                            }
+
+                            // 🔥 Multiple attempts → select attempt
+                            else -> {
+                                bottomNavController.navigate(
+                                    "${Routes.ATTEMPT_SELECTION}/$courseId"
+                                )
+                            }
+                        }
                     },
+
+                    onOpenTestList = { courseId, attemptId ->
+                        bottomNavController.navigate(
+                            "${Routes.TEST_LIST}/$courseId/$attemptId"
+                        )
+                    },
+
                     onResumeTest = { testId ->
-                        // 🔥 ALWAYS root
-                        rootNavController.navigate("${Routes.TEST_ENGINE}/$testId")
+                        rootNavController.navigate(
+                            "${Routes.TEST_GUIDELINES}/$testId"
+                        )
                     },
-                    onOpenResult = { courseId ->
-                        // 🔥 Course completed → result history/detail
-                        bottomNavController.navigate(Routes.RESULT)
+
+                    onOpenResult = { testId ->
+                        rootNavController.navigate(
+                            "${Routes.RESULT_DETAIL}/$testId"
+                        )
                     },
+
                     onOpenSettings = {
                         bottomNavController.navigate(Routes.SETTINGS)
                     }
@@ -62,10 +104,90 @@ fun MainScaffold(
             composable(Routes.MY_COURSES) {
                 MyCoursesScreen(
                     onOpenCourse = { courseId ->
-                        bottomNavController.navigate("${Routes.COURSE_DETAIL}/$courseId")
+
+                        val attempts =
+                            FakeCourseAttemptRepository
+                                .attempts
+                                .value
+                                .filter { it.courseId == courseId }
+
+                        when {
+                            attempts.isEmpty() -> {
+                                bottomNavController.navigate(
+                                    "${Routes.COURSE_DETAIL}/$courseId"
+                                )
+                            }
+
+                            attempts.size == 1 -> {
+                                bottomNavController.navigate(
+                                    "${Routes.TEST_LIST}/$courseId/${attempts.first().attemptId}"
+                                )
+                            }
+
+                            else -> {
+                                bottomNavController.navigate(
+                                    "${Routes.ATTEMPT_SELECTION}/$courseId"
+                                )
+                            }
+                        }
                     },
-                    onOpenTests = { courseId ->
-                        bottomNavController.navigate("${Routes.TEST_LIST}/$courseId")
+
+                    onOpenTests = { courseId, attemptId ->
+                        bottomNavController.navigate(
+                            "${Routes.TEST_LIST}/$courseId/$attemptId"
+                        ) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+
+            /* ---------------- COURSE DETAIL ---------------- */
+            composable("${Routes.COURSE_DETAIL}/{courseId}") { backStack ->
+                val courseId = backStack.arguments!!.getString("courseId")!!
+
+                CourseDetailScreen(
+                    courseId = courseId,
+                    onPurchaseSuccess = {
+                        bottomNavController.navigate(Routes.MY_COURSES) {
+                            popUpTo(Routes.HOME)
+                            launchSingleTop = true
+                        }
+                    },
+                    onOpenTests = { attemptId ->
+                        bottomNavController.navigate(
+                            "${Routes.TEST_LIST}/$courseId/$attemptId"
+                        )
+                    }
+                )
+            }
+
+            /* ---------------- TEST LIST ---------------- */
+            composable("${Routes.TEST_LIST}/{courseId}/{attemptId}") { backStack ->
+                val courseId = backStack.arguments!!.getString("courseId")!!
+                val attemptId = backStack.arguments!!.getString("attemptId")!!
+
+                TestListScreen(
+                    courseId = courseId,
+                    attemptId = attemptId,
+                    onStartTest = { testId ->
+                        rootNavController.navigate(
+                            "${Routes.TEST_GUIDELINES}/$attemptId/$testId"
+                        )
+                    }
+                )
+            }
+
+            /* ---------------- ATTEMPT SELECTION ---------------- */
+            composable("${Routes.ATTEMPT_SELECTION}/{courseId}") { backStack ->
+                val courseId = backStack.arguments!!.getString("courseId")!!
+
+                AttemptSelectionScreen(
+                    courseId = courseId,
+                    onAttemptSelected = { attemptId ->
+                        bottomNavController.navigate(
+                            "${Routes.TEST_LIST}/$courseId/$attemptId"
+                        )
                     }
                 )
             }
@@ -73,8 +195,10 @@ fun MainScaffold(
             /* ---------------- RESULTS ---------------- */
             composable(Routes.RESULT) {
                 ResultsHistoryScreen(
-                    onOpenResult = { testId ->
-                        rootNavController.navigate("${Routes.RESULT_DETAIL}/$testId")
+                    onOpenResult = { attemptId, testId ->
+                        rootNavController.navigate(
+                            "${Routes.RESULT_DETAIL}/$attemptId/$testId"
+                        )
                     }
                 )
             }
@@ -95,36 +219,6 @@ fun MainScaffold(
                 SettingsScreen(
                     onBack = {
                         bottomNavController.popBackStack()
-                    }
-                )
-            }
-
-            /* ---------------- COURSE DETAIL ---------------- */
-            composable("${Routes.COURSE_DETAIL}/{courseId}") { backStack ->
-                val courseId = backStack.arguments?.getString("courseId")!!
-
-                CourseDetailScreen(
-                    courseId = courseId,
-                    onPurchaseSuccess = {
-                        bottomNavController.navigate(Routes.MY_COURSES) {
-                            popUpTo(Routes.HOME)
-                        }
-                    },
-                    onOpenTests = {
-                        bottomNavController.navigate("${Routes.TEST_LIST}/$courseId")
-                    }
-                )
-            }
-
-            /* ---------------- TEST LIST ---------------- */
-            composable("${Routes.TEST_LIST}/{courseId}") { backStack ->
-                val courseId = backStack.arguments?.getString("courseId")!!
-
-                TestListScreen(
-                    courseId = courseId,
-                    onStartTest = { testId ->
-                        // 🔥 ALWAYS root
-                        rootNavController.navigate("${Routes.TEST_ENGINE}/$testId")
                     }
                 )
             }
