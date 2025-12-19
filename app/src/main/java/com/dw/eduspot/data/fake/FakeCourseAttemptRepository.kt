@@ -5,11 +5,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
+/**
+ * Handles COURSE-LEVEL attempts only
+ * (one purchase = one attempt)
+ */
 object FakeCourseAttemptRepository {
 
-    private val _attempts = MutableStateFlow<List<CourseAttempt>>(emptyList())
+    private val _attempts =
+        MutableStateFlow<List<CourseAttempt>>(emptyList())
+
     val attempts: StateFlow<List<CourseAttempt>> = _attempts
 
+    /**
+     * BUY COURSE → creates a NEW attempt
+     * Re-purchase = new attemptId
+     */
     fun createCourseAttempt(
         courseId: String,
         courseTitle: String,
@@ -18,24 +28,39 @@ object FakeCourseAttemptRepository {
         val attemptId = "$courseId-${UUID.randomUUID()}"
 
         _attempts.value += CourseAttempt(
-            attemptId = attemptId,
-            courseId = courseId,
-            courseTitle = courseTitle,
-            totalTests = totalTests,
-            startedAt = System.currentTimeMillis(),
-            completedTestIds = emptyList()
-        )
+                        attemptId = attemptId,
+                        courseId = courseId,
+                        courseTitle = courseTitle,
+                        totalTests = totalTests,
+                        startedAt = System.currentTimeMillis(),
+                        completedTestIds = emptyList()
+                    )
 
         return attemptId
     }
 
-    fun markTestCompleted(attemptId: String, testId: String) {
-        _attempts.value = _attempts.value.map {
-            if (it.attemptId == attemptId)
-                it.copy(
-                    completedTestIds = (it.completedTestIds + testId).distinct()
-                )
-            else it
-        }
+    /**
+     * MARK TEST COMPLETED (inside an attempt)
+     * Idempotent & safe
+     */
+    fun markTestCompleted(
+        attemptId: String,
+        testId: String
+    ) {
+        _attempts.value =
+            _attempts.value.map { attempt ->
+                if (attempt.attemptId == attemptId) {
+                    attempt.copy(
+                        completedTestIds =
+                            (attempt.completedTestIds + testId).distinct()
+                    )
+                } else attempt
+            }
     }
+
+    /**
+     * Helper — used by UI if needed
+     */
+    fun getAttempt(attemptId: String): CourseAttempt? =
+        _attempts.value.firstOrNull { it.attemptId == attemptId }
 }
