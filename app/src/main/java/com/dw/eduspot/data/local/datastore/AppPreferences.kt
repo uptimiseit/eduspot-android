@@ -4,9 +4,20 @@ import com.dw.eduspot.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 interface AppPreferences {
+
+    // -------- Session --------
     val isLoggedIn: Flow<Boolean>
+    val userId: Flow<String?>
+    val jwt: Flow<String?>
+
+    // -------- App State --------
+    val onboardingSeen: Flow<Boolean>
     val themeMode: Flow<ThemeMode>
 
+    // -------- Setters --------
     suspend fun setLoggedIn(value: Boolean)
+    suspend fun setUserId(userId: String?)
+    suspend fun setJwt(token: String?)
+    suspend fun setOnboardingSeen(seen: Boolean)
     suspend fun setThemeMode(mode: ThemeMode)
 }

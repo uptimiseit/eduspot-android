@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.EduSpot" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- 🔵 MAIN APP THEME (Material 3 + No ActionBar) -->
+    <style name="Theme.EduSpot" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- System bars -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <!-- Disable ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Edge-to-edge -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <!-- 🚀 SPLASH SCREEN THEME -->
+    <style name="Theme.EduSpot.Splash" parent="Theme.SplashScreen">
+        <!-- Background -->
+        <item name="windowSplashScreenBackground">@color/white</item>
+
+        <!-- App logo (VECTOR ONLY!) -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+
+        <!-- Transparent circle -->
+        <item name="windowSplashScreenIconBackgroundColor">
+            @android:color/transparent
+        </item>
+
+        <!-- After splash -->
+        <item name="postSplashScreenTheme">@style/Theme.EduSpot</item>
+    </style>
+
 </resources>

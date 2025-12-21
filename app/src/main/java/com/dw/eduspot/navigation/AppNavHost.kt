@@ -1,6 +1,7 @@
 package com.dw.eduspot.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -9,12 +10,13 @@ import com.dw.eduspot.ui.results.ResultScreen
 import com.dw.eduspot.ui.splash.SplashScreen
 import com.dw.eduspot.ui.testengine.TestEngineScreen
 import com.dw.eduspot.ui.guidelines.TestGuidelinesScreen
+import com.dw.eduspot.ui.onboarding.OnboardingScreen
+import com.dw.eduspot.ui.onboarding.OnboardingViewModel
 import com.dw.eduspot.ui.preparing.TestPreparingScreen
 
 @Composable
 fun AppNavHost() {
 
-    // ✅ ONE root NavController for whole app
     val rootNavController = rememberNavController()
 
     NavHost(
@@ -25,6 +27,11 @@ fun AppNavHost() {
         /* ---------------- SPLASH ---------------- */
         composable(Routes.SPLASH) {
             SplashScreen(
+                onNavigateToOnboarding = {
+                    rootNavController.navigate(Routes.ONBOARDING) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                },
                 onNavigateToLogin = {
                     rootNavController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
@@ -38,10 +45,20 @@ fun AppNavHost() {
             )
         }
 
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                onFinished = {
+                    rootNavController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         /* ---------------- LOGIN ---------------- */
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginSuccess = {
+                onNavigateDashboard = {
                     rootNavController.navigate(Routes.MAIN) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
@@ -49,14 +66,12 @@ fun AppNavHost() {
             )
         }
 
-        /* ---------------- MAIN (Bottom Tabs) ---------------- */
+        /* ---------------- MAIN ---------------- */
         composable(Routes.MAIN) {
-            MainScaffold(
-                rootNavController = rootNavController
-            )
+            MainScaffold(rootNavController)
         }
 
-        /* ---------------- TEST GUIDELINES ---------------- */
+        /* ---------------- TEST FLOW ---------------- */
         composable("${Routes.TEST_GUIDELINES}/{attemptId}/{testId}") {
             val attemptId = it.arguments!!.getString("attemptId")!!
             val testId = it.arguments!!.getString("testId")!!
@@ -72,9 +87,6 @@ fun AppNavHost() {
             )
         }
 
-
-
-        /* ---------------- TEST PREPARING ---------------- */
         composable("${Routes.TEST_PREPARING}/{attemptId}/{testId}") {
             val attemptId = it.arguments!!.getString("attemptId")!!
             val testId = it.arguments!!.getString("testId")!!
@@ -83,19 +95,14 @@ fun AppNavHost() {
                 onPrepared = {
                     rootNavController.navigate(
                         "${Routes.TEST_ENGINE}/$attemptId/$testId"
-                    ) {
-                        popUpTo("${Routes.TEST_GUIDELINES}/$attemptId/$testId") {
-                            inclusive = true
-                        }
-                    }
+                    )
                 }
             )
         }
 
-        /* ---------------- TEST ENGINE ---------------- */
-        composable("${Routes.TEST_ENGINE}/{attemptId}/{testId}") { backStack ->
-            val attemptId = backStack.arguments!!.getString("attemptId")!!
-            val testId = backStack.arguments!!.getString("testId")!!
+        composable("${Routes.TEST_ENGINE}/{attemptId}/{testId}") {
+            val attemptId = it.arguments!!.getString("attemptId")!!
+            val testId = it.arguments!!.getString("testId")!!
 
             TestEngineScreen(
                 attemptId = attemptId,
@@ -103,17 +110,14 @@ fun AppNavHost() {
                 onTestFinished = {
                     rootNavController.navigate(
                         "${Routes.RESULT_DETAIL}/$attemptId/$testId"
-                    ) {
-                        launchSingleTop = true
-                    }
+                    )
                 }
             )
         }
 
-        /* ---------------- RESULT DETAIL ---------------- */
-        composable("${Routes.RESULT_DETAIL}/{attemptId}/{testId}") { backStack ->
-            val attemptId = backStack.arguments!!.getString("attemptId")!!
-            val testId = backStack.arguments!!.getString("testId")!!
+        composable("${Routes.RESULT_DETAIL}/{attemptId}/{testId}") {
+            val attemptId = it.arguments!!.getString("attemptId")!!
+            val testId = it.arguments!!.getString("testId")!!
 
             ResultScreen(
                 attemptId = attemptId,

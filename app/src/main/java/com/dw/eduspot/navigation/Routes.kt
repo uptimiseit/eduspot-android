@@ -28,5 +28,6 @@ object Routes {
     const val TEST_GUIDELINES = "test_guidelines"
     const val TEST_PREPARING = "test_preparing"
     const val ATTEMPT_SELECTION = "attempt_selection"
+    const val ONBOARDING = "onboarding"
 
 }

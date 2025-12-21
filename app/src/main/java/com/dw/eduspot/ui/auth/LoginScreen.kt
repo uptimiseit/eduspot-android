@@ -6,37 +6,50 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    onNavigateDashboard: () -> Unit
 ) {
-    Scaffold { innerPadding ->
+    Scaffold { padding ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(24.dp)
+            ) {
 
                 Text(
                     text = "Welcome to EDUSPOT",
                     style = MaterialTheme.typography.headlineMedium
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Prepare smarter. Perform better.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    modifier = Modifier.fillMaxWidth(0.8f),
                     onClick = {
-                        viewModel.fakeLogin()
-                        onLoginSuccess()
-                    }
+                        // Google Sign-In trigger here
+                        onNavigateDashboard()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
                 ) {
-                    Text("Login (Fake)")
+                    Text("Continue with Google")
                 }
             }
         }

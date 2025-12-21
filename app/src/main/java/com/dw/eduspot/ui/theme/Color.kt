@@ -15,3 +15,9 @@ val LightSurface = Color(0xFFFFFFFF)
 // Dark theme backgrounds
 val DarkBackground = Color(0xFF121212)
 val DarkSurface = Color(0xFF1D1D1D)
+
+val EduBlue = Color(0xFF1E6FD9)
+val EduGold = Color(0xFFF5A623)
+val EduBackground = Color(0xFFF7FAFF)
+val EduTextPrimary = Color(0xFF1C1C1C)
+val EduTextSecondary = Color(0xFF6B7280)

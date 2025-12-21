@@ -1,18 +1,20 @@
 [versions]
 # Build
 agp = "8.13.2"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 gradle = "8.14.3"
 
 # Android Core
 coreKtx = "1.17.0"
 lifecycle = "2.10.0"
 activityCompose = "1.12.2"
+retrofitVersion = "3.0.0"
 splashScreen = "1.2.0"
 
 # Compose
 composeBom = "2025.12.01"
 navigation = "2.9.6"
+material = "1.13.0"
 
 # DI / Arch
 hilt = "2.57.2"
@@ -34,6 +36,7 @@ paging = "3.3.6"
 googleServices = "4.4.4"
 firebaseBom = "34.7.0"
 firebaseCrashlyticsPlugin = "3.0.6"
+playServicesAuth = "21.4.0"
 
 # Testing
 junit = "4.13.2"
@@ -61,6 +64,7 @@ androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-compose-material-icons-extended = {group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
@@ -79,6 +83,7 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 
 # Local Data
+retrofit-v2110 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -93,6 +98,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+google-play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

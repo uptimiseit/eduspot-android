@@ -19,26 +19,56 @@ class AppPreferencesImpl @Inject constructor(
 
     private object Keys {
         val LOGGED_IN = booleanPreferencesKey("logged_in")
+        val USER_ID = stringPreferencesKey("user_id")
+        val JWT = stringPreferencesKey("jwt")
+        val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
         val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
+    // -------- Getters --------
     override val isLoggedIn: Flow<Boolean> =
         context.dataStore.data.map { it[Keys.LOGGED_IN] ?: false }
 
+    override val userId: Flow<String?> =
+        context.dataStore.data.map { it[Keys.USER_ID] }
+
+    override val jwt: Flow<String?> =
+        context.dataStore.data.map { it[Keys.JWT] }
+
+    override val onboardingSeen: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.ONBOARDING_SEEN] ?: false }
+
     override val themeMode: Flow<ThemeMode> =
         context.dataStore.data.map {
-            ThemeMode.valueOf(it[Keys.THEME_MODE] ?: ThemeMode.SYSTEM.name)
+            ThemeMode.valueOf(
+                it[Keys.THEME_MODE] ?: ThemeMode.SYSTEM.name
+            )
         }
 
+    // -------- Setters --------
     override suspend fun setLoggedIn(value: Boolean) {
+        context.dataStore.edit { it[Keys.LOGGED_IN] = value }
+    }
+
+    override suspend fun setUserId(userId: String?) {
         context.dataStore.edit {
-            it[Keys.LOGGED_IN] = value
+            if (userId == null) it.remove(Keys.USER_ID)
+            else it[Keys.USER_ID] = userId
         }
     }
 
-    override suspend fun setThemeMode(mode: ThemeMode) {
+    override suspend fun setJwt(token: String?) {
         context.dataStore.edit {
-            it[Keys.THEME_MODE] = mode.name
+            if (token == null) it.remove(Keys.JWT)
+            else it[Keys.JWT] = token
         }
+    }
+
+    override suspend fun setOnboardingSeen(seen: Boolean) {
+        context.dataStore.edit { it[Keys.ONBOARDING_SEEN] = seen }
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { it[Keys.THEME_MODE] = mode.name }
     }
 }

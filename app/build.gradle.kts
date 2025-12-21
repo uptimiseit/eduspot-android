@@ -4,9 +4,8 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt)
-    // google services & crashlytics optional - enable when you add google-services.json
-    // alias(libs.plugins.google.services)
-    // alias(libs.plugins.firebase.crashlytics)
+     alias(libs.plugins.google.services)
+     alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -76,6 +75,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.google.material)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.compose.material.icons.extended)
@@ -86,11 +86,12 @@ dependencies {
     implementation(libs.androidx.room.common.jvm)
     kapt(libs.hilt.compiler)
 
-    // Firebase - enable when google-services.json present
-    // implementation(platform(libs.firebase.bom))
-    // implementation(libs.firebase.auth)
-    // implementation(libs.firebase.messaging)
-    // implementation(libs.firebase.crashlytics)
+//     Firebase - enable when google-services.json present
+     implementation(platform(libs.firebase.bom))
+     implementation(libs.firebase.auth)
+     implementation(libs.firebase.messaging)
+     implementation(libs.firebase.crashlytics)
+     implementation(libs.google.play.services.auth)
 
     // Utils
     implementation(libs.coil.compose)
@@ -104,4 +105,15 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
+
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
+
+    //lottie
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
 }

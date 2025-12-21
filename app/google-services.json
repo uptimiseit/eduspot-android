@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1001376563558",
+    "project_id": "eduspot-f96ad",
+    "storage_bucket": "eduspot-f96ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1001376563558:android:275bf0567fdcba83b448a7",
+        "android_client_info": {
+          "package_name": "com.dw.eduspot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1001376563558-9k605ifk11vlh5nqgevkpn95cqtti427.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dw.eduspot",
+            "certificate_hash": "f841e1561d7501f276e319cf90d5021af7bdc74b"
+          }
+        },
+        {
+          "client_id": "1001376563558-6h2vkujp22nup4rqkt9uo6rvmu5cdj5u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnWglqUTvHFtCblIZTnzhOfB5udNlELbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1001376563558-6h2vkujp22nup4rqkt9uo6rvmu5cdj5u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

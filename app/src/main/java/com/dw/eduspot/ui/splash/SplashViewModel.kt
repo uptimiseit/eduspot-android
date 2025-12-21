@@ -2,36 +2,36 @@ package com.dw.eduspot.ui.splash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dw.eduspot.data.fake.FakeSessionRepository
-import com.dw.eduspot.di.IoDispatcher
-import com.dw.eduspot.domain.usecase.GetLoginStateUseCase
+import com.dw.eduspot.data.local.datastore.AppPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
-
-sealed class SplashDestination {
-    object Login : SplashDestination()
-    object Dashboard : SplashDestination()
-}
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
-    getLoginStateUseCase: GetLoginStateUseCase
+    preferences: AppPreferences
 ) : ViewModel() {
 
-    private val _destination = MutableStateFlow<SplashDestination?>(null)
-    val destination: StateFlow<SplashDestination?> = _destination
+    val destination: StateFlow<SplashDestination?> =
+        combine(
+            preferences.onboardingSeen,
+            preferences.jwt
+        ) { onboardingSeen, jwt ->
 
-    init {
-        viewModelScope.launch {
-            getLoginStateUseCase().collect { loggedIn ->
-                _destination.value =
-                    if (loggedIn) SplashDestination.Dashboard
-                    else SplashDestination.Login
+            when {
+                !onboardingSeen ->
+                    SplashDestination.Onboarding
+
+                jwt.isNullOrEmpty() ->
+                    SplashDestination.Login
+
+                else ->
+                    SplashDestination.Dashboard
             }
-        }
-    }
+
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 }
