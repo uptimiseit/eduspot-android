@@ -31,14 +31,12 @@ fun OnboardingPage(
         verticalArrangement = Arrangement.Center
     ) {
 
-        // 🔵 LOGO
-        Image(
-            painter = painterResource(id = R.drawable.ic_splash_logo),
-            contentDescription = null,
-            modifier = Modifier.size(72.dp)
-        )
+        // 🔵 LOGO (only first page)
+        if (page.title == "Learn Smarter") {
 
-        Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         // 🎬 LOTTIE
         LottieAnimation(

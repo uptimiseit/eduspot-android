@@ -3,7 +3,6 @@ package com.dw.eduspot.data.local.datastore
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import com.dw.eduspot.domain.model.ThemeMode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,7 +21,7 @@ class AppPreferencesImpl @Inject constructor(
         val USER_ID = stringPreferencesKey("user_id")
         val JWT = stringPreferencesKey("jwt")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
-        val THEME_MODE = stringPreferencesKey("theme_mode")
+
     }
 
     // -------- Getters --------
@@ -38,12 +37,7 @@ class AppPreferencesImpl @Inject constructor(
     override val onboardingSeen: Flow<Boolean> =
         context.dataStore.data.map { it[Keys.ONBOARDING_SEEN] ?: false }
 
-    override val themeMode: Flow<ThemeMode> =
-        context.dataStore.data.map {
-            ThemeMode.valueOf(
-                it[Keys.THEME_MODE] ?: ThemeMode.SYSTEM.name
-            )
-        }
+
 
     // -------- Setters --------
     override suspend fun setLoggedIn(value: Boolean) {
@@ -68,7 +62,5 @@ class AppPreferencesImpl @Inject constructor(
         context.dataStore.edit { it[Keys.ONBOARDING_SEEN] = seen }
     }
 
-    override suspend fun setThemeMode(mode: ThemeMode) {
-        context.dataStore.edit { it[Keys.THEME_MODE] = mode.name }
-    }
+
 }

@@ -8,6 +8,9 @@ import com.dw.eduspot.data.local.datastore.AppPreferences
 import com.dw.eduspot.data.remote.api.AuthApi
 import com.dw.eduspot.data.remote.dto.CandidateLoginRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,51 +25,68 @@ class AuthViewModel @Inject constructor(
     private val preferences: AppPreferences
 ) : ViewModel() {
 
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState: StateFlow<AuthUiState> = _uiState
+
     fun loginWithGoogle(
         googleIdToken: String,
         onResult: (AuthDestination) -> Unit
     ) {
         viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = true,
+                    errorMessage = null
+                )
 
-            // 1️⃣ Firebase Auth
-            val firebaseResult =
-                authRepository.signInWithGoogle(googleIdToken)
+                // 1️⃣ Firebase Auth
+                val firebaseResult =
+                    authRepository.signInWithGoogle(googleIdToken)
 
-            if (firebaseResult.isFailure) return@launch
+                if (firebaseResult.isFailure) {
+                    throw firebaseResult.exceptionOrNull()
+                        ?: Exception("Firebase login failed")
+                }
 
-            val firebaseUser = firebaseResult.getOrThrow()
+                val firebaseUser = firebaseResult.getOrThrow()
 
-            // 2️⃣ Backend Login
-            val response =
-                authApi.loginCandidate(
-                    CandidateLoginRequest(
-                        firebase_uid = firebaseUser.uid,
-                        email = firebaseUser.email,
-                        name = firebaseUser.name,
-                        firebase_id_token = firebaseUser.firebaseToken
+                // 2️⃣ Backend login
+                val response =
+                    authApi.loginCandidate(
+                        CandidateLoginRequest(
+                            firebase_uid = firebaseUser.uid,
+                            email = firebaseUser.email,
+                            name = firebaseUser.name,
+                            firebase_id_token = firebaseUser.firebaseToken
+                        )
                     )
+
+                val candidate =
+                    response.candidate ?: response.newCandidate
+                    ?: throw IllegalStateException(
+                        "Candidate is null from backend"
+                    )
+
+                // 3️⃣ Save session
+                preferences.setJwt(response.token)
+                preferences.setUserId(candidate.id)
+                preferences.setLoggedIn(true)
+
+                // 4️⃣ Success
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                onResult(AuthDestination.DASHBOARD)
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Login failed"
                 )
-
-            // 🔍 Debug (keep for now)
-            Log.d("AUTH", "Raw response = $response")
-
-            // 3️⃣ Resolve user (NEW or EXISTING)
-            val candidate =
-                response.candidate ?: response.newCandidate
-                ?: throw IllegalStateException(
-                    "Candidate is null from backend"
-                )
-
-            // 4️⃣ Save session (authoritative)
-            preferences.setJwt(response.token)
-            preferences.setUserId(candidate.id)
-            preferences.setLoggedIn(true)
-
-            // onboardingSeen untouched
-
-            // 5️⃣ Navigate
-            onResult(AuthDestination.DASHBOARD)
+            }
         }
+    }
+
+    fun clearErrorMessage() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 
     fun logout() {

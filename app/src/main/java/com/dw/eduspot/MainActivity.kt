@@ -3,42 +3,38 @@ package com.dw.eduspot
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.runtime.getValue
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import com.dw.eduspot.domain.model.ThemeMode
 import com.dw.eduspot.navigation.AppNavHost
 import com.dw.eduspot.ui.theme.EduSpotTheme
-import com.dw.eduspot.ui.theme.ThemeViewModel
+import com.dw.eduspot.utils.LocalAppWindowInfo
+import com.dw.eduspot.utils.toAppWindowInfo
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // Android 12+ Splash Screen
+        // Android 12+ splash
         installSplashScreen()
-
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
         setContent {
 
-            // App-level theme controller
-            val themeViewModel: ThemeViewModel = hiltViewModel()
-            val themeMode by themeViewModel.themeMode.collectAsState()
+            // ✅ MUST be inside setContent (Composable scope)
+            val windowSizeClass = calculateWindowSizeClass(this)
 
-            EduSpotTheme(
-                darkTheme = when (themeMode) {
-                    ThemeMode.DARK -> true
-                    ThemeMode.LIGHT -> false
-                    ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
-                }
+            // ✅ Provide window info to whole app
+            CompositionLocalProvider(
+                LocalAppWindowInfo provides windowSizeClass.toAppWindowInfo()
             ) {
-                AppNavHost()
+                EduSpotTheme {
+                    AppNavHost()
+                }
             }
         }
     }

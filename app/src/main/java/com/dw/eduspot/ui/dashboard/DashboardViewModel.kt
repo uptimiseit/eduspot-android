@@ -3,7 +3,9 @@ package com.dw.eduspot.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
+import com.dw.eduspot.ui.dashboard.model.ExamCategory
 import com.dw.eduspot.ui.dashboard.model.ResumeCourseItem
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -54,4 +56,15 @@ class DashboardViewModel : ViewModel() {
                 SharingStarted.WhileSubscribed(5_000),
                 emptyList()
             )
+    val categories: StateFlow<List<ExamCategory>> =
+        MutableStateFlow(
+            listOf(
+                ExamCategory(id = "ALL", title = "All"),
+                ExamCategory(id = "UPSC", title = "UPSC"),
+                ExamCategory(id = "NEET", title = "NEET"),
+                ExamCategory(id = "REET", title = "REET"),
+                ExamCategory(id = "SSC", title = "SSC"),
+                ExamCategory(id = "BANKING", title = "Banking")
+            )
+        )
 }

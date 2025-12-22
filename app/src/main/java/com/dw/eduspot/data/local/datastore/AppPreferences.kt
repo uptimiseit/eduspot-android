@@ -1,6 +1,5 @@
 package com.dw.eduspot.data.local.datastore
 
-import com.dw.eduspot.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 interface AppPreferences {
@@ -12,12 +11,12 @@ interface AppPreferences {
 
     // -------- App State --------
     val onboardingSeen: Flow<Boolean>
-    val themeMode: Flow<ThemeMode>
+
 
     // -------- Setters --------
     suspend fun setLoggedIn(value: Boolean)
     suspend fun setUserId(userId: String?)
     suspend fun setJwt(token: String?)
     suspend fun setOnboardingSeen(seen: Boolean)
-    suspend fun setThemeMode(mode: ThemeMode)
+
 }

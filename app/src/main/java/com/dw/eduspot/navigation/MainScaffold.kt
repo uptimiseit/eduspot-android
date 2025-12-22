@@ -18,7 +18,6 @@ import com.dw.eduspot.ui.dashboard.DashboardScreen
 import com.dw.eduspot.ui.mycourses.MyCoursesScreen
 import com.dw.eduspot.ui.profile.ProfileScreen
 import com.dw.eduspot.ui.results.ResultsHistoryScreen
-import com.dw.eduspot.ui.settings.SettingsScreen
 import com.dw.eduspot.ui.testlist.TestListScreen
 
 @Composable
@@ -95,7 +94,7 @@ fun MainScaffold(
                     },
 
                     onOpenSettings = {
-                        bottomNavController.navigate(Routes.SETTINGS)
+                        // TODO: Settings disabled for now
                     }
                 )
             }
@@ -214,14 +213,8 @@ fun MainScaffold(
                 )
             }
 
-            /* ---------------- SETTINGS ---------------- */
-            composable(Routes.SETTINGS) {
-                SettingsScreen(
-                    onBack = {
-                        bottomNavController.popBackStack()
-                    }
-                )
-            }
+
+
         }
     }
 }

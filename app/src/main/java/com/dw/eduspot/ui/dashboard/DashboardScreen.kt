@@ -1,176 +1,174 @@
 package com.dw.eduspot.ui.dashboard
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.dw.eduspot.utils.DemoConstants
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onOpenCourse: (String) -> Unit,      // Popular exams
-    onOpenTestList: (String, String) -> Unit,    // Resume
-    onResumeTest: (String) -> Unit,      // Demo only
+    onOpenCourse: (String) -> Unit,
+    onOpenTestList: (String, String) -> Unit,
+    onResumeTest: (String) -> Unit,
     onOpenResult: (String) -> Unit,
     onOpenSettings: () -> Unit
 ) {
+
     val viewModel: DashboardViewModel = hiltViewModel()
     val resumeCourses by viewModel.resumeCourses.collectAsState()
+    val categories by viewModel.categories.collectAsState()
 
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedCategory by remember {
-        mutableStateOf(DashboardCategories.categories.first())
-    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("EDUSPOT") },
-                actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
+        /** ---------------- HERO ---------------- **/
+        item {
+            AnimatedHeroSection(
+                onExploreClick = {
+                    // Open ALL courses screen
+                    onOpenCourse("ALL")
                 }
             )
         }
-    ) { padding ->
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+        /** ---------------- CATEGORIES ---------------- **/
+        item {
 
-            /* ---------------- SEARCH ---------------- */
-            item {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search exams...") },
-                    singleLine = true
-                )
-            }
+            var selectedCategoryId by remember { mutableStateOf<String?>(null) }
 
-            /* ---------------- CATEGORIES ---------------- */
-            item {
-                CategorySection(
-                    categories = DashboardCategories.categories,
-                    selectedCategoryId = selectedCategory.id,
-                    onCategorySelected = { selectedCategory = it }
-                )
-            }
+            CategorySection(
+                categories = categories,
+                selectedCategoryId = selectedCategoryId,
+                onAllClick = {
+                    selectedCategoryId = null
+                    onOpenCourse("ALL")
+                },
+                onCategoryClick = { category ->
+                    selectedCategoryId = category.id
+                    onOpenCourse(category.id)
+                }
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-            /* ---------------- BANNER ---------------- */
-            item { BannerSection() }
+        item {
+            SectionHeader(
+                title = "Popular Exams",
+                subtitle = "Most purchased by students",
+                onSeeAllClick = {
+                    // navigate to course list (POPULAR)
+                }
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
-            /* ---------------- DEMO EXAM ---------------- */
-            item {
-                DemoExamCard(
-                    onStartDemo = {
-                        onResumeTest(DemoConstants.DEMO_TEST_ID)
-                    }
-                )
-            }
-
-            /* ---------------- RESUME COURSE ---------------- */
-            if (resumeCourses.isNotEmpty()) {
-
-                item { SectionTitle("Resume Your Course") }
-
-                item {
-                    ResumeTestSection(
-                        courses = resumeCourses,
-                        onResume = { course ->
-                            onOpenTestList(course.courseId, course.attemptId)
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(DashboardFakeData.popularExams) { course ->
+                    ExamCard(
+                        course = course,
+                        onBuyNow = {
+                            // navigate to purchase / course detail
+                            onOpenCourse(course.id)
+                        },
+                        onViewTests = {
+                            // open bottom sheet later
                         }
                     )
                 }
             }
+        }
 
-            /* ---------------- POPULAR EXAMS ---------------- */
-            item { SectionTitle("Popular Exams") }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    items(DashboardFakeData.popularExams) { exam ->
-                        ExamCard(
-                            exam = exam,
-                            onClick = { onOpenCourse(exam.id) }
-                        )
-                    }
+        item {
+            Spacer(Modifier.height(32.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+            Spacer(Modifier.height(24.dp))
+        }
+        /** ---------------- Banner Section ---------------- **/
+        item { BannerSection() }
+
+        /** ---------------- NEW ---------------- **/
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            SectionHeader(
+                title = "Popular Exams",
+                subtitle = "Most purchased by students",
+                onSeeAllClick = {
+                    // navigate to course list (POPULAR)
+                }
+            )
+
+        }
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(DashboardFakeData.newExams) { course ->
+                    ExamCard(
+                        course = course,
+                        onBuyNow = {
+                            // navigate to purchase / course detail
+                            onOpenCourse(course.id)
+                        },
+                        onViewTests = {
+                            // open bottom sheet later
+                        }
+                    )
                 }
             }
+        }
 
-            /* ---------------- NEW EXAMS ---------------- */
-            item { SectionTitle("New Exams") }
-
-            items(DashboardFakeData.newExams) { exam ->
-                ExamListItem(exam)
+        /** ---------------- RESUME ---------------- **/
+        if (resumeCourses.isNotEmpty()) {
+            item {
+                Spacer(Modifier.height(28.dp))
+                Text(
+                    text = "Continue Learning",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            item {
+                ResumeTestSection(
+                    courses = resumeCourses,
+                    onResume = { course ->
+                        onOpenTestList(course.courseId, course.attemptId)
+                    }
+                )
             }
         }
-    }
-}
-
-/* ===================================================== */
-/* ================== UI HELPERS ======================= */
-/* ===================================================== */
-
-@Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        style = MaterialTheme.typography.titleLarge
-    )
-}
-
-@Composable
-private fun ExamCard(
-    exam: ExamItem,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .width(220.dp)
-            .padding(end = 12.dp)
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(exam.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(exam.description, style = MaterialTheme.typography.bodyMedium)
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
         }
-    }
-}
-
-@Composable
-private fun ExamListItem(exam: ExamItem) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(exam.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(exam.description, style = MaterialTheme.typography.bodyMedium)
-        }
+        /** ---------------- POPULAR ---------------- **/
     }
 }

@@ -29,16 +29,21 @@ fun SplashScreen(
     val scale = remember { Animatable(0.85f) }
     val alpha = remember { Animatable(0f) }
 
+    // 🔒 Prevent multiple navigation
+    var hasNavigated by remember { mutableStateOf(false) }
+
     // 🎬 Run animation once
     LaunchedEffect(Unit) {
         scale.animateTo(1f, tween(700))
         alpha.animateTo(1f, tween(500))
     }
 
-    // 🚦 Navigation decision
+    // 🚦 Navigation decision (SAFE)
     LaunchedEffect(destination) {
-        if (destination != null) {
-            delay(400) // smooth exit
+        if (destination != null && !hasNavigated) {
+            hasNavigated = true
+            delay(400)
+
             when (destination) {
                 SplashDestination.Onboarding -> onNavigateToOnboarding()
                 SplashDestination.Login -> onNavigateToLogin()
@@ -54,7 +59,6 @@ fun SplashScreen(
     ) {
         Image(
             painter = painterResource(R.drawable.ic_splash_logo),
-
             contentDescription = "EduSpot Logo",
             modifier = Modifier
                 .size(140.dp)
