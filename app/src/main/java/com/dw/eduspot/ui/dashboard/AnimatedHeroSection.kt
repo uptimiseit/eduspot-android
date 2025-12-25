@@ -6,14 +6,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
 @Composable
-fun AnimatedHeroSection(
-    onExploreClick: () -> Unit
-) {
+fun AnimatedHeroSection(onExploreClick: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        visible = true
-    }
+    LaunchedEffect(Unit) { visible = true }
 
     AnimatedVisibility(
         visible = visible,
@@ -24,8 +20,6 @@ fun AnimatedHeroSection(
             animationSpec = tween(durationMillis = 500)
         )
     ) {
-        HeroSection(
-            onExploreClick = onExploreClick
-        )
+        HeroSection(onExploreClick = onExploreClick)
     }
 }

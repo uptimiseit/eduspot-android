@@ -5,46 +5,48 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.dw.eduspot.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseDetailScreen(
     courseId: String,
     onPurchaseSuccess: (String) -> Unit,
-    onOpenTests: (String) -> Unit
+    onOpenTests: (String) -> Unit,
+    viewModel: CourseViewModel = hiltViewModel()
 ) {
-    val course = remember { CourseFakeData.getCourseById(courseId) }
-    val viewModel: CourseViewModel = viewModel()
+    val uiState by viewModel.purchaseResult.collectAsState()
 
-    val attemptId by viewModel.purchaseResult.collectAsState()
-    LaunchedEffect(attemptId) {
-        attemptId?.let { onPurchaseSuccess(it) }
+    LaunchedEffect(uiState) {
+        uiState?.let { onPurchaseSuccess(it) }
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text(course.title) })
-        }
-    ) { padding ->
-
+        topBar = { TopAppBar(title = { Text("Course Details") }) }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(padding)
+                .fillMaxSize()
+                .padding(paddingValues)
                 .padding(16.dp)
         ) {
-
-            Text(course.description)
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Price: ${course.price}")
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(20.dp))
 
             Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { viewModel.buyCourse(course) }
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                onClick = { viewModel.buyCourse(courseId) }
             ) {
-                Text("Buy Again") // 🔥 STEP 10 UX
+                Text("Buy Course")
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            Button(
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                onClick = { onOpenTests(courseId) }
+            ) {
+                Text("View Tests")
             }
         }
     }

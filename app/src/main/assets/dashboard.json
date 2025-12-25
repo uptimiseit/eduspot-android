@@ -1,0 +1,19 @@
+{
+  "categories": [
+    { "id": "ALL", "title": "All" },
+    { "id": "SSC", "title": "SSC" },
+    { "id": "UPSC", "title": "UPSC" }
+  ],
+  "popularCourses": [
+    {
+      "id": "ssc_cgl",
+      "title": "SSC CGL Full Length Test Series",
+      "category": "SSC",
+      "totalTests": 30,
+      "language": "Hindi",
+      "mrp": 1299,
+      "offerPrice": 499,
+      "tags": ["Popular", "Bestseller"]
+    }
+  ]
+}

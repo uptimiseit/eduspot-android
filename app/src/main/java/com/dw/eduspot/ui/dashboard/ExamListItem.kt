@@ -6,11 +6,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.dw.eduspot.ui.dashboard.model.ExamCourse
+import com.dw.eduspot.ui.course.Course
 
 @Composable
 fun ExamListItem(
-    course: ExamCourse
+    course: Course
 ) {
     Card(
         modifier = Modifier

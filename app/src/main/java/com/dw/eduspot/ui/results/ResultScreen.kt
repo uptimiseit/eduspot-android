@@ -2,13 +2,12 @@ package com.dw.eduspot.ui.results
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.dw.eduspot.domain.model.QuestionResult
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -18,14 +17,12 @@ fun ResultScreen(
     testId: String,
     onBack: () -> Unit
 ) {
-    val viewModel: ResultViewModel = viewModel(
-        factory = ResultViewModelFactory(
-            attemptId = attemptId,
-            testId = testId
-        )
-    )
-
+    val viewModel: ResultViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadResult(attemptId, testId)
+    }
 
     Scaffold(
         topBar = {
@@ -44,88 +41,66 @@ fun ResultScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .padding(16.dp)
         ) {
-            @Composable
-           fun ResultSummaryCard(state: ResultUiState) {
-                Card(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
-                        Text(
-                            text = state.scoreText,
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text("Correct: ${state.correct}")
-                        Text("Wrong: ${state.wrong}")
-                        Text("Unattempted: ${state.unAttempted}")
-                        Text("Time Taken: ${state.timeTakenText}")
-                    }
-                }
-            }
-            // -------------------------
-            // Summary Section
-            // -------------------------
             item {
                 ResultSummaryCard(state)
             }
-            @Composable
-             fun QuestionReviewCard(question: QuestionResult) {
 
-                Card(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+            item { Spacer(Modifier.height(24.dp)) }
 
-                        Text(
-                            text = question.question,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        question.options.forEachIndexed { index, option ->
-                            val backgroundColor = when {
-                                index == question.correctAnswerIndex ->
-                                    Color(0xFFB9F6CA) // correct (green)
-                                question.selectedAnswerIndex == index ->
-                                    Color(0xFFFFCDD2) // wrong (red)
-                                question.selectedAnswerIndex == null ->
-                                    Color(0xFFFFF9C4) // unattempted (yellow)
-                                else ->
-                                    MaterialTheme.colorScheme.surface
-                            }
-
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                color = backgroundColor,
-                                shape = MaterialTheme.shapes.small
-                            ) {
-                                Text(
-                                    text = option,
-                                    modifier = Modifier.padding(12.dp)
-                                )
-                            }
-                        }
-                    }
-                }
+            items(state.questions.size) { index ->
+                QuestionReviewCard(state.questions[index])
             }
-            // -------------------------
-            // Question Review
-            // -------------------------
-            items(state.questions) { question ->
-                QuestionReviewCard(question)
+        }
+    }
+}
+
+@Composable
+fun ResultSummaryCard(state: ResultUiState) {
+    Card(
+        Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(state.scoreText, style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(8.dp))
+            Text("Correct: ${state.correct}")
+            Text("Wrong: ${state.wrong}")
+            Text("Unattempted: ${state.unAttempted}")
+            Text("Time Taken: ${state.timeTakenText}")
+        }
+    }
+}
+
+@Composable
+fun QuestionReviewCard(question: QuestionResult) {
+    Card(
+        Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(question.question, style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+
+            question.options.forEachIndexed { i, opt ->
+                val bg = when {
+                    i == question.correctAnswerIndex -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                    question.selectedAnswerIndex == i -> MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+                    question.selectedAnswerIndex == null -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+                    else -> MaterialTheme.colorScheme.surface
+                }
+
+                Surface(
+                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    color = bg,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text(opt, Modifier.padding(12.dp))
+                }
             }
         }
     }

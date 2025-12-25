@@ -19,71 +19,33 @@ import com.dw.eduspot.R
 fun HeroSection(
     onExploreClick: () -> Unit
 ) {
-    Button(onClick = onExploreClick) {
-        Text("Explore Courses")
-    }
     Card(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFF6A5AE0),
-                            Color(0xFF8E7BFF)
-                        )
-                    )
-                )
-                .padding(20.dp)
+        Column(
+            modifier = Modifier.padding(24.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        "Crack your next exam 🚀",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+            Text(
+                text = "Prepare Smarter.\nCrack Faster.",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-                    Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
-                    Text(
-                        "Real exam patterns, smart analysis, and confidence to win",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
+            Text(
+                text = "Full-length test series with real exam pattern",
+                style = MaterialTheme.typography.bodyMedium
+            )
 
-                    Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
 
-                    Button(
-                        onClick = onExploreClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White
-                        )
-                    ) {
-                        Text(
-                            "Explore Courses",
-                            color = Color(0xFF5E35B1)
-                        )
-                    }
-                }
-
-                Spacer(Modifier.width(12.dp))
-
-                Image(
-                    painter = painterResource(R.drawable.ic_dashboard_hero),
-                    contentDescription = null,
-                    modifier = Modifier.size(96.dp)
-                )
+            Button(onClick = onExploreClick) {
+                Text("Explore Exams")
             }
         }
     }

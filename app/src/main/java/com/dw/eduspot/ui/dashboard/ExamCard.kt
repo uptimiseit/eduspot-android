@@ -1,132 +1,91 @@
 package com.dw.eduspot.ui.dashboard
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.dw.eduspot.ui.dashboard.model.ExamCourse
+import com.dw.eduspot.ui.dashboard.components.TagChip
+import com.dw.eduspot.ui.course.Course
+import com.dw.eduspot.ui.dashboard.components.CourseMetaRow
+import com.dw.eduspot.ui.dashboard.components.PriceRow
 
 @Composable
 fun ExamCard(
-    course: ExamCourse,
-    onBuyNow: () -> Unit,
-    onViewTests: () -> Unit
+    course: Course,
+    onBuyNow: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .width(260.dp)
-            .height(280.dp) // 🔥 FIXED HEIGHT (KEY)
-            .padding(end = 12.dp),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+            .height(320.dp)
+            .padding(end = 16.dp),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(16.dp)
         ) {
 
-            Column {
+            // 🔖 Badge row
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TagChip(course.category)
 
-                // 🔖 CATEGORY + TAG
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TagChip(course.category)
-
-                    if (course.isBestSeller) {
-                        TagChip("BESTSELLER", isPrimary = true)
-                    }
-                    if (course.isNew) {
-                        TagChip("NEW", color = Color(0xFF2E7D32))
-                    }
+                if (course.isBestSeller) {
+                    TagChip("Best Seller", MaterialTheme.colorScheme.tertiary)
                 }
-
-                Spacer(Modifier.height(12.dp))
-
-                // 🧠 TITLE (2 lines max)
-                Text(
-                    text = course.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2
-                )
-
-                Spacer(Modifier.height(6.dp))
-
-                Text(
-                    text = course.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                FeatureText("✔ ${course.totalTests} Full Length Tests")
-                FeatureText("✔ Language: ${course.language}")
-                FeatureText("✔ Latest Exam Pattern")
             }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-            Column {
+            Spacer(Modifier.height(12.dp))
 
-                // 💰 PRICE
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "₹${course.mrp}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textDecoration = TextDecoration.LineThrough
-                    )
+            // 🧠 Title
+            Text(
+                text = course.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 3
+            )
 
-                    Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.height(6.dp))
 
-                    Text(
-                        text = "₹${course.offerPrice}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Save ₹${course.mrp - course.offerPrice}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF2E7D32)
-                    )
-                }
+            // ✍️ Subtitle
+            Text(
+                text = course.title,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-                Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
-                // 🛒 CTA
-                Button(
-                    onClick = onBuyNow,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text("Buy Now")
-                }
+            Divider()
+
+            Spacer(Modifier.height(12.dp))
+
+            // 📊 Info
+            CourseMetaRow(
+                tests = course.totalTests,
+                language = course.language
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            // 💰 Price
+            PriceRow(
+                mrp = course.mrp,
+                offer = course.offerPrice
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Button(
+                onClick = onBuyNow,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Buy Now")
             }
         }
     }
-}
-
-@Composable
-fun FeatureText(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(vertical = 2.dp)
-    )
 }

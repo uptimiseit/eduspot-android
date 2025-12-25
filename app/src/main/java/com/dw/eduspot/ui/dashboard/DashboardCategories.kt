@@ -1,7 +1,5 @@
 package com.dw.eduspot.ui.dashboard
 
-import com.dw.eduspot.ui.dashboard.model.ExamCategory
-
 object DashboardCategories {
 
     val categories = listOf(

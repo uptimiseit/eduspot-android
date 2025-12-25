@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SectionHeader(
     title: String,
-    subtitle: String,
-    onSeeAllClick: () -> Unit
+    showSeeAll: Boolean = false,
+    onSeeAll: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -27,21 +27,15 @@ fun SectionHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge
+        )
 
-        TextButton(onClick = onSeeAllClick) {
-            Text("See all")
+        if (showSeeAll && onSeeAll != null) {
+            TextButton(onClick = onSeeAll) {
+                Text("See all")
+            }
         }
     }
 }

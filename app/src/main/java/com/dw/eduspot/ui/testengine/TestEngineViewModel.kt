@@ -2,141 +2,109 @@ package com.dw.eduspot.ui.testengine
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dw.eduspot.data.fake.DemoTestData
-import com.dw.eduspot.data.fake.FakeAttemptRepository
-import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
-import com.dw.eduspot.data.fake.FakeQuestionData
 import com.dw.eduspot.domain.model.AttemptResult
+import com.dw.eduspot.data.repository.DashboardRepository
 import com.dw.eduspot.domain.model.QuestionResult
-import com.dw.eduspot.utils.DemoConstants
+import com.dw.eduspot.domain.repository.TestAttemptRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
 
-class TestEngineViewModel(
-    private val attemptId: String,
-    private val testId: String
+@HiltViewModel
+class TestEngineViewModel @Inject constructor(
+    private val attemptRepo: TestAttemptRepository,
+    private val dashboardRepo: DashboardRepository
 ) : ViewModel() {
 
-    private val isDemo = testId == DemoConstants.DEMO_TEST_ID
-    private val totalTimeSeconds = 10 * 60
-
-    // ---------------- QUESTIONS ----------------
-    private val questions =
-        if (isDemo) DemoTestData.getDemoQuestions()
-        else FakeQuestionData.getQuestions()
-
-    // ---------------- UI STATE ----------------
-    private val _uiState = MutableStateFlow(
-        TestUiState(
-            questions = questions,
-            timeLeftSeconds = totalTimeSeconds
-        )
-    )
+    private val _uiState = MutableStateFlow(TestUiState())
     val uiState: StateFlow<TestUiState> = _uiState
 
-    init {
-        // 🔒 Single-attempt guard (per attemptId)
-        if (!isDemo &&
-            FakeAttemptRepository.hasAttempted(attemptId, testId)
-        ) {
+    fun startTest(
+        attemptId: String,
+        testId: String,
+        questions: List<QuestionItem>,
+        durationSeconds: Int
+    ) {
+        if (attemptRepo.hasAttempted(attemptId, testId)) {
             _uiState.value = _uiState.value.copy(isFinished = true)
-        } else {
-            startTimer()
+            return
         }
-    }
 
-    // ---------------- TIMER ----------------
-    private fun startTimer() {
+        _uiState.value = TestUiState(
+            questions = questions,
+            currentIndex = 0,
+            selectedAnswers = emptyMap(),
+            timeLeftSeconds = durationSeconds,
+            isFinished = false
+        )
+
+        // Start Timer
         viewModelScope.launch {
-            while (
-                _uiState.value.timeLeftSeconds > 0 &&
-                !_uiState.value.isFinished
-            ) {
+            while (_uiState.value.timeLeftSeconds > 0 && !_uiState.value.isFinished) {
                 delay(1000)
-                _uiState.value =
-                    _uiState.value.copy(
-                        timeLeftSeconds = _uiState.value.timeLeftSeconds - 1
-                    )
+                _uiState.value = _uiState.value.copy(
+                    timeLeftSeconds = _uiState.value.timeLeftSeconds - 1
+                )
             }
-
-            if (!_uiState.value.isFinished) {
-                submitTest()
-            }
+            if (!_uiState.value.isFinished) submitTestResult(attemptId, testId)
         }
     }
 
-    // ---------------- ANSWERS ----------------
     fun selectAnswer(index: Int) {
-        val state = _uiState.value
-        val question = state.questions[state.currentIndex]
-        val updated = state.selectedAnswers.toMutableMap()
-        updated[question.id] = index
-        _uiState.value = state.copy(selectedAnswers = updated)
+        val q = _uiState.value.questions[_uiState.value.currentIndex]
+        _uiState.value = _uiState.value.copy(
+            selectedAnswers = _uiState.value.selectedAnswers + (q.id to index)
+        )
     }
 
     fun nextQuestion() {
-        val state = _uiState.value
-        if (state.currentIndex < state.questions.lastIndex) {
-            _uiState.value =
-                state.copy(currentIndex = state.currentIndex + 1)
-        } else {
-            submitTest()
+        if (_uiState.value.currentIndex < _uiState.value.questions.lastIndex) {
+            _uiState.value = _uiState.value.copy(currentIndex = _uiState.value.currentIndex + 1)
         }
     }
 
     fun previousQuestion() {
-        val state = _uiState.value
-        if (state.currentIndex > 0) {
-            _uiState.value =
-                state.copy(currentIndex = state.currentIndex - 1)
+        if (_uiState.value.currentIndex > 0) {
+            _uiState.value = _uiState.value.copy(currentIndex = _uiState.value.currentIndex - 1)
         }
     }
 
-    // ---------------- SUBMIT ----------------
     fun submitTest() {
+        // UI calls this → triggers final submit
+        submitTestResult(_uiState.value.attemptId, _uiState.value.testId)
+    }
+
+    // 🔥 Renamed to avoid collision
+    private fun submitTestResult(attemptId: String, testId: String) {
         val state = _uiState.value
-        if (state.isFinished) return
-
         val attempted = state.selectedAnswers.size
-        val correct = attempted / 2
-        val wrong = attempted - correct
-        val unAttempted = state.questions.size - attempted
+        val score = attempted
 
-        val questionResults =
-            state.questions.map { q ->
-                QuestionResult(
-                    questionId = q.id,
-                    question = q.question,
-                    options = q.options,
-                    correctAnswerIndex = q.correctAnswerIndex,
-                    selectedAnswerIndex = state.selectedAnswers[q.id]
-                )
-            }
-
-        // ✅ SAVE RESULT (final API)
-        FakeAttemptRepository.saveResult(
+        attemptRepo.saveResult(
             AttemptResult(
                 attemptId = attemptId,
                 testId = testId,
-                testName = if (isDemo) "Demo Test" else "Mock Test",
+                testName = "Mock Test",
                 totalQuestions = state.questions.size,
-                correct = correct,
-                wrong = wrong,
-                unAttempted = unAttempted,
-                score = correct,
-                timeTakenSeconds =
-                    totalTimeSeconds - state.timeLeftSeconds,
+                correct = score,
+                wrong = 0,
+                unAttempted = state.questions.size - attempted,
+                score = score,
+                timeTakenSeconds = 0,
                 attemptedAt = System.currentTimeMillis(),
-                questions = questionResults
+                questions = state.questions.map {
+                    QuestionResult(
+                        questionId = it.id,
+                        question = it.question,
+                        options = it.options,
+                        correctAnswerIndex = it.correctAnswerIndex,
+                        selectedAnswerIndex = state.selectedAnswers[it.id]
+                    )
+                }
             )
-        )
-
-        // 🔹 Mark progress for course attempt
-        FakeCourseAttemptRepository.markTestCompleted(
-            attemptId = attemptId,
-            testId = testId
         )
 
         _uiState.value = state.copy(isFinished = true)

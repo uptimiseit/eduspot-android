@@ -13,34 +13,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
-import com.dw.eduspot.ui.dashboard.model.ExamCategory
 
 @Composable
 fun CategorySection(
     categories: List<ExamCategory>,
-    selectedCategoryId: String?,
-    onAllClick: () -> Unit,
-    onCategoryClick: (ExamCategory) -> Unit
+    selectedCategoryId: String,
+    onCategorySelected: (ExamCategory) -> Unit
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         items(categories) { category ->
-            val isSelected =
-                category.id != "ALL" && category.id == selectedCategoryId
-
             FilterChip(
-                selected = isSelected,
-                onClick = {
-                    if (category.id == "ALL") {
-                        onAllClick()
-                    } else {
-                        onCategoryClick(category)
-                    }
-                },
-                label = {
-                    Text(category.title)
-                }
+                selected = category.id == selectedCategoryId,
+                onClick = { onCategorySelected(category) },
+                label = { Text(category.title) },
+                modifier = Modifier.padding(end = 8.dp)
             )
         }
     }

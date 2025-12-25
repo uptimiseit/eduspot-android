@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.compose.material)
 
     // Hilt + Nav Hilt
     implementation(libs.hilt.android)
@@ -93,6 +94,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.material3)
     kapt(libs.hilt.compiler)
 
 //     Firebase - enable when google-services.json present

@@ -1,42 +1,51 @@
 package com.dw.eduspot.ui.results
 
 import androidx.lifecycle.ViewModel
-import com.dw.eduspot.data.fake.FakeAttemptRepository
+import androidx.lifecycle.viewModelScope
+import com.dw.eduspot.domain.repository.TestAttemptRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
 
-class ResultsHistoryViewModel : ViewModel() {
+@HiltViewModel
+class ResultsHistoryViewModel @Inject constructor(
+    private val attemptRepo: TestAttemptRepository
+) : ViewModel() {
 
-    private val _results =
-        MutableStateFlow<List<ResultListItem>>(emptyList())
-    val results: StateFlow<List<ResultListItem>> = _results
+    private val _uiState = MutableStateFlow(ResultsHistoryUiState())
+    val uiState: StateFlow<ResultsHistoryUiState> = _uiState
 
     init {
         loadResults()
     }
 
     private fun loadResults() {
-        val attempts = FakeAttemptRepository.getAllAttempts()
-        val courseAttempts =
-            attempts.groupBy { it.testId.substringBefore("-") }
+        viewModelScope.launch {
+            val attempts = _uiState.value.results // start empty, then fill
+            val repoAttempts = attemptRepo.attemptsFlow.value
+            val grouped = repoAttempts.groupBy { it.testId }
 
-        _results.value = attempts.map { attempt ->
+            _uiState.value = ResultsHistoryUiState(
+                results = repoAttempts.map { attempt ->
+                    val attemptNumber =
+                        grouped[attempt.testId]
+                            ?.sortedBy { it.attemptedAt }
+                            ?.indexOfFirst { it.testId == attempt.testId }
+                            ?.plus(1) ?: 1
 
-            val attemptNumber =
-                courseAttempts[attempt.testId.substringBefore("-")]
-                    ?.sortedBy { it.attemptedAt }
-                    ?.indexOfFirst { it.testId == attempt.testId }
-                    ?.plus(1) ?: 1
-
-            ResultListItem(
-                attemptId = attempt.testId, // temp mapping
-                testId = attempt.testId,
-                title = attempt.testName,
-                scoreText = "Score: ${attempt.score}/${attempt.totalQuestions}",
-                dateText = formatDate(attempt.attemptedAt),
-                attemptNumber = attemptNumber
+                    ResultsHistoryItem(
+                        attemptId = attempt.attemptId,
+                        testId = attempt.testId,
+                        title = attempt.testName,
+                        scoreText = "Score: ${attempt.score}/${attempt.totalQuestions}",
+                        dateText = formatDate(attempt.attemptedAt),
+                        attemptNumber = attemptNumber
+                    )
+                }
             )
         }
     }

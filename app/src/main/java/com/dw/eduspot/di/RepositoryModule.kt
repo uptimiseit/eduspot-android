@@ -1,6 +1,10 @@
 package com.dw.eduspot.di
 
-import com.dw.eduspot.data.fake.FakeSessionRepository
+
+import com.dw.eduspot.data.local.db.dao.CourseDao
+import com.dw.eduspot.data.remote.api.CourseApi
+import com.dw.eduspot.data.repository.CourseRepository
+import com.dw.eduspot.data.repository.CourseRepositoryImpl
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
@@ -13,7 +17,9 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideSessionRepository(): FakeSessionRepository {
-        return FakeSessionRepository()
-    }
+    fun provideCourseRepository(
+        api: CourseApi,
+        dao: CourseDao
+    ): CourseRepository =
+        CourseRepositoryImpl(api, dao)
 }

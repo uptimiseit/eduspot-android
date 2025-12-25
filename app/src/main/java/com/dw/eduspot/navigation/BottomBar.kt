@@ -1,39 +1,36 @@
 package com.dw.eduspot.navigation
 
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
+import com.dw.eduspot.R
 
 @Composable
-fun BottomBar(
-    navController: NavController
-) {
+fun BottomBar(nav: NavHostController) {
+    val backStack by nav.currentBackStackEntryAsState()
+    val currentRoute = backStack?.destination?.route
+
     val items = listOf(
-        BottomNavItem.Dashboard,
-        BottomNavItem.MyCourses,
-        BottomNavItem.Results,
-        BottomNavItem.Profile
+        Routes.HOME to R.raw.ic_home,
+        Routes.MY_COURSES to R.raw.course,
+        Routes.RESULT to R.raw.result
     )
 
-    val currentRoute =
-        navController.currentBackStackEntryAsState().value
-            ?.destination?.route
-
     NavigationBar {
-        items.forEach { item ->
+        items.forEach { (route, icon) ->
             NavigationBarItem(
-                selected = currentRoute == item.route,
+                selected = currentRoute == route,
                 onClick = {
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
+                    nav.navigate(route) {
+                        popUpTo(Routes.HOME) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 },
-                icon = { Icon(item.icon, item.label) },
-                label = { Text(item.label) }
+                icon = { Icon(painterResource(icon), null) },
+                label = { Text(route.replace("_", " ").replaceFirstChar { it.uppercase() }) }
             )
         }
     }

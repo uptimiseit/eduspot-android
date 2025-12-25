@@ -9,48 +9,46 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
 
 @Composable
 fun MyCoursesScreen(
     onOpenCourse: (String) -> Unit,
-    onOpenTests: (String, String) -> Unit // courseId, attemptId
+    onOpenTests: (String, String) -> Unit
 ) {
-    val attempts by FakeCourseAttemptRepository.attempts.collectAsState()
+    // Using an empty state placeholder until real DI repository is wired
+    val attempts = remember { emptyList<CourseAttemptUi>() }
 
     if (attempts.isEmpty()) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Text("No courses purchased yet")
         }
     } else {
-        LazyColumn(modifier = Modifier.padding(16.dp)) {
+        LazyColumn(Modifier.padding(16.dp)) {
             items(attempts) { attempt ->
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                        .clickable {
-                            onOpenTests(
-                                attempt.courseId,
-                                attempt.attemptId
-                            )
-                        }
+                    Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable {
+                        onOpenTests(attempt.courseId, attempt.attemptId)
+                    }
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = attempt.courseTitle,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "Progress: ${attempt.completedTestIds.size}/${attempt.totalTests}"
-                        )
+                    Column(Modifier.padding(16.dp)) {
+                        Text(attempt.courseTitle, style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Progress: ${attempt.completedTestIds.size}/${attempt.totalTests}")
                     }
                 }
             }
         }
     }
 }
+
+data class CourseAttemptUi(
+    val attemptId: String,
+    val courseId: String,
+    val courseTitle: String,
+    val totalTests: Int,
+    val completedTestIds: List<String>,
+    val startedAt: Long
+)

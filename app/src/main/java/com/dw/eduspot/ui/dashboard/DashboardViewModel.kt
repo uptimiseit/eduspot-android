@@ -2,69 +2,36 @@ package com.dw.eduspot.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dw.eduspot.data.fake.FakeCourseAttemptRepository
-import com.dw.eduspot.ui.dashboard.model.ExamCategory
-import com.dw.eduspot.ui.dashboard.model.ResumeCourseItem
+import com.dw.eduspot.data.local.db.dao.DashboardDao
+import com.dw.eduspot.data.mapper.buildDashboardUi
+import com.dw.eduspot.data.repository.DashboardRepository
+import com.dw.eduspot.ui.common.UiState
+import com.dw.eduspot.ui.dashboard.model.DashboardUi
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DashboardViewModel : ViewModel() {
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    private val repository: DashboardRepository,
+    private val dao: DashboardDao
+) : ViewModel() {
 
-    val resumeCourses: StateFlow<List<ResumeCourseItem>> =
-        FakeCourseAttemptRepository.attempts
-            .map { attempts ->
+    private val _dashboardState = MutableStateFlow<UiState<DashboardUi>>(UiState.Loading)
+    val dashboardState: StateFlow<UiState<DashboardUi>> = _dashboardState
 
-                // Group attempts by course (NEET, UPSC, etc.)
-                attempts
-                    .groupBy { it.courseId }
-                    .flatMap { (_, courseAttempts) ->
+    init { loadDashboard() }
 
-                        // Sort attempts chronologically → Attempt #1, #2, #3
-                        courseAttempts
-                            .sortedBy { it.startedAt }
-                            .mapIndexedNotNull { index, attempt ->
-
-                                val attemptedTests = attempt.completedTestIds.size
-
-                                // ❌ Fully completed attempt → no resume card
-                                if (attemptedTests >= attempt.totalTests) return@mapIndexedNotNull null
-
-                                ResumeCourseItem(
-                                    attemptId = attempt.attemptId,
-                                    courseId = attempt.courseId,
-                                    courseTitle = attempt.courseTitle,
-
-                                    // ✅ STEP 9: visual separation
-                                    attemptNumber = index + 1,
-
-                                    totalTests = attempt.totalTests,
-                                    attemptedTests = attemptedTests,
-                                    progressPercent =
-                                        (attemptedTests * 100) / attempt.totalTests,
-
-                                    lastCompletedTestId =
-                                        attempt.completedTestIds.lastOrNull()
-                                )
-                            }
-                    }
+    private fun loadDashboard() {
+        viewModelScope.launch {
+            try {
+                repository.refreshDashboard()
+                _dashboardState.value = UiState.Success(dao.buildDashboardUi())
+            } catch (e: Exception) {
+                _dashboardState.value = UiState.Error("Dashboard load failed", e)
             }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                emptyList()
-            )
-    val categories: StateFlow<List<ExamCategory>> =
-        MutableStateFlow(
-            listOf(
-                ExamCategory(id = "ALL", title = "All"),
-                ExamCategory(id = "UPSC", title = "UPSC"),
-                ExamCategory(id = "NEET", title = "NEET"),
-                ExamCategory(id = "REET", title = "REET"),
-                ExamCategory(id = "SSC", title = "SSC"),
-                ExamCategory(id = "BANKING", title = "Banking")
-            )
-        )
+        }
+    }
 }

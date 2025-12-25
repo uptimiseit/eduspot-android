@@ -14,32 +14,17 @@ data class AuthUser(
 class AuthRepository(
     private val firebaseAuth: FirebaseAuth
 ) {
-
     fun getCurrentUser() = firebaseAuth.currentUser
 
     suspend fun signInWithGoogle(idToken: String): Result<AuthUser> {
         return try {
-            val credential =
-                GoogleAuthProvider.getCredential(idToken, null)
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val authResult = firebaseAuth.signInWithCredential(credential).await()
+            val user = authResult.user ?: return Result.failure(Exception("User is null"))
+            val firebaseToken = user.getIdToken(true).await().token
+                ?: return Result.failure(Exception("Firebase token is null"))
 
-            val authResult =
-                firebaseAuth.signInWithCredential(credential).await()
-
-            val user =
-                authResult.user ?: return Result.failure(Exception("User null"))
-
-            val firebaseToken =
-                user.getIdToken(true).await().token
-                    ?: return Result.failure(Exception("Token null"))
-
-            Result.success(
-                AuthUser(
-                    uid = user.uid,
-                    email = user.email,
-                    name = user.displayName,
-                    firebaseToken = firebaseToken
-                )
-            )
+            Result.success(AuthUser(user.uid, user.email, user.displayName, firebaseToken))
         } catch (e: Exception) {
             Result.failure(e)
         }
